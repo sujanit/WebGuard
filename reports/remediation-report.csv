@@ -1,0 +1,6 @@
+﻿finding_id,title,severity,status,notes
+7EDDEE823EA5,Missing Content-Security-Policy,Medium,Open,
+5752628D4DDA,Missing Strict-Transport-Security,Medium,Open,
+52830800647D,Missing Referrer-Policy,Low,Open,
+B680C9BE3FC5,Missing Permissions-Policy,Low,Fixed,Security configuration reviewed and corrected.
+53BEA0BE695D,HTTPS Not Enabled,Medium,Open,

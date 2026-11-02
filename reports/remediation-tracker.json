@@ -1,0 +1,37 @@
+{
+    "7EDDEE823EA5": {
+        "finding_id": "7EDDEE823EA5",
+        "title": "Missing Content-Security-Policy",
+        "severity": "Medium",
+        "status": "Open",
+        "notes": ""
+    },
+    "5752628D4DDA": {
+        "finding_id": "5752628D4DDA",
+        "title": "Missing Strict-Transport-Security",
+        "severity": "Medium",
+        "status": "Open",
+        "notes": ""
+    },
+    "52830800647D": {
+        "finding_id": "52830800647D",
+        "title": "Missing Referrer-Policy",
+        "severity": "Low",
+        "status": "Open",
+        "notes": ""
+    },
+    "B680C9BE3FC5": {
+        "finding_id": "B680C9BE3FC5",
+        "title": "Missing Permissions-Policy",
+        "severity": "Low",
+        "status": "Fixed",
+        "notes": "Security configuration reviewed and corrected."
+    },
+    "53BEA0BE695D": {
+        "finding_id": "53BEA0BE695D",
+        "title": "HTTPS Not Enabled",
+        "severity": "Medium",
+        "status": "Open",
+        "notes": ""
+    }
+}

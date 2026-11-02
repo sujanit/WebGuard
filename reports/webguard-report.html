@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>WebGuard Security Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #0f172a;
+            color: white;
+            padding: 28px 5%;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        header p {
+            color: #94a3b8;
+        }
+
+        main {
+            width: 92%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #0f172a;
+        }
+
+        .overview {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(180px, 1fr)
+            );
+            gap: 18px;
+        }
+
+        .metric {
+            padding: 22px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 5px solid #2563eb;
+        }
+
+        .metric h3 {
+            margin: 0;
+            font-size: 28px;
+            overflow-wrap: anywhere;
+        }
+
+        .metric p {
+            color: #64748b;
+        }
+
+        .severity-grid,
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(150px, 1fr)
+            );
+            gap: 15px;
+        }
+
+        .severity-card {
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .severity-card h3 {
+            margin: 0;
+        }
+
+        .severity-card p {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 10px 0 0;
+        }
+
+        .critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .high {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .info {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .comparison-card {
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .comparison-card h3 {
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        .comparison-card p {
+            font-size: 27px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .comparison-card span {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .assessment {
+            margin-top: 20px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .tag {
+            padding: 5px 9px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        td {
+            line-height: 1.5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .scan-info p {
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 23px;
+            }
+
+            .section {
+                padding: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>WebGuard Security Dashboard</h1>
+        <p>Automated Web Application Security Assessment</p>
+    </header>
+
+    <main>
+
+        <section class="section">
+            <h2>Executive Summary</h2>
+
+            <div class="overview">
+
+                <div class="metric">
+                    <h3>24</h3>
+                    <p>Risk Score (heuristic)</p>
+                </div>
+
+                <div class="metric">
+                    <h3>High</h3>
+                    <p>Risk Level</p>
+                </div>
+
+                <div class="metric">
+                    <h3>5</h3>
+                    <p>Total Findings</p>
+                </div>
+
+                <div class="metric">
+                    <h3>200</h3>
+                    <p>HTTP Status</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="section scan-info">
+            <h2>Scan Information</h2>
+
+            <p><strong>Target:</strong> http://127.0.0.1:3000</p>
+            <p><strong>Scan Time:</strong> 02 Nov 2026, 06:59 PM</p>
+            <p><strong>Scope:</strong> Local loopback target only</p>
+        </section>
+
+        <section class="section">
+            <h2>Severity Distribution</h2>
+
+            <div class="severity-grid">
+                
+        <div class="severity-card critical">
+            <h3>Critical</h3>
+            <p>0</p>
+        </div>
+        
+        <div class="severity-card high">
+            <h3>High</h3>
+            <p>0</p>
+        </div>
+        
+        <div class="severity-card medium">
+            <h3>Medium</h3>
+            <p>3</p>
+        </div>
+        
+        <div class="severity-card low">
+            <h3>Low</h3>
+            <p>2</p>
+        </div>
+        
+        <div class="severity-card info">
+            <h3>Info</h3>
+            <p>0</p>
+        </div>
+        
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Scan-to-Scan Comparison</h2>
+            
+        <div class="comparison-grid">
+
+            <div class="comparison-card">
+                <h3>Previous Risk</h3>
+                <p>24.0</p>
+                <span>High</span>
+            </div>
+
+            <div class="comparison-card">
+                <h3>Current Risk</h3>
+                <p>24.0</p>
+                <span>High</span>
+            </div>
+
+            <div class="comparison-card">
+                <h3>Risk Change</h3>
+                <p>+0</p>
+                <span>0.0% improvement</span>
+            </div>
+
+            <div class="comparison-card">
+                <h3>Findings Change</h3>
+                <p>+0</p>
+                <span>Previous: 5 |
+                Current: 5</span>
+            </div>
+
+        </div>
+
+        <div class="assessment"
+             style="border-left:5px solid #64748b;">
+
+            <h3 style="color:#64748b;">
+                Assessment: Unchanged
+            </h3>
+
+            <p>
+                Unchanged compared with
+                the previous recorded scan based on the
+                custom risk score.
+            </p>
+
+        </div>
+        
+        </section>
+
+        <section class="section">
+            <h2>Risk Score Trend</h2>
+            
+    <div style="width:100%;overflow-x:auto;">
+        <svg viewBox="0 0 700 280"
+             role="img"
+             aria-label="Risk score trend chart"
+             style="width:100%;min-width:450px;">
+
+            
+        <line x1="60" y1="230"
+              x2="670" y2="230"
+              stroke="#e2e8f0"
+              stroke-dasharray="4 4"/>
+
+        <text x="50" y="234"
+              text-anchor="end"
+              font-size="11"
+              fill="#64748b">
+            0
+        </text>
+        
+        <line x1="60" y1="180.0"
+              x2="670" y2="180.0"
+              stroke="#e2e8f0"
+              stroke-dasharray="4 4"/>
+
+        <text x="50" y="184.0"
+              text-anchor="end"
+              font-size="11"
+              fill="#64748b">
+            6
+        </text>
+        
+        <line x1="60" y1="130.0"
+              x2="670" y2="130.0"
+              stroke="#e2e8f0"
+              stroke-dasharray="4 4"/>
+
+        <text x="50" y="134.0"
+              text-anchor="end"
+              font-size="11"
+              fill="#64748b">
+            12
+        </text>
+        
+        <line x1="60" y1="80.0"
+              x2="670" y2="80.0"
+              stroke="#e2e8f0"
+              stroke-dasharray="4 4"/>
+
+        <text x="50" y="84.0"
+              text-anchor="end"
+              font-size="11"
+              fill="#64748b">
+            18
+        </text>
+        
+        <line x1="60" y1="30"
+              x2="670" y2="30"
+              stroke="#e2e8f0"
+              stroke-dasharray="4 4"/>
+
+        <text x="50" y="34"
+              text-anchor="end"
+              font-size="11"
+              fill="#64748b">
+            24
+        </text>
+        
+
+            <line x1="60" y1="30"
+                  x2="60" y2="230"
+                  stroke="#94a3b8"/>
+
+            <line x1="60" y1="230"
+                  x2="670" y2="230"
+                  stroke="#94a3b8"/>
+
+            <polyline points="60.0,30.0 127.8,30.0 195.6,30.0 263.3,30.0 331.1,30.0 398.9,30.0 466.7,30.0 534.4,30.0 602.2,30.0 670.0,30.0"
+                      fill="none"
+                      stroke="#2563eb"
+                      stroke-width="3"
+                      stroke-linejoin="round"
+                      stroke-linecap="round"/>
+
+            
+        <circle cx="60.0" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 1: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="127.77777777777777" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 2: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="195.55555555555554" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 3: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="263.33333333333337" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 4: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="331.1111111111111" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 5: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="398.8888888888889" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 6: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="466.6666666666667" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 7: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="534.4444444444445" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 8: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="602.2222222222222" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 9: Risk score 24.0</title>
+        </circle>
+        
+        <circle cx="670.0" cy="30.0" r="6"
+                fill="#2563eb"
+                stroke="white"
+                stroke-width="2">
+            <title>Scan 10: Risk score 24.0</title>
+        </circle>
+        
+            
+        <text x="60.0" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            1
+        </text>
+        
+        <text x="127.77777777777777" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            2
+        </text>
+        
+        <text x="195.55555555555554" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            3
+        </text>
+        
+        <text x="263.33333333333337" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            4
+        </text>
+        
+        <text x="331.1111111111111" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            5
+        </text>
+        
+        <text x="398.8888888888889" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            6
+        </text>
+        
+        <text x="466.6666666666667" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            7
+        </text>
+        
+        <text x="534.4444444444445" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            8
+        </text>
+        
+        <text x="602.2222222222222" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            9
+        </text>
+        
+        <text x="670.0" y="265"
+              text-anchor="middle"
+              font-size="12"
+              fill="#64748b">
+            10
+        </text>
+        
+
+        </svg>
+    </div>
+
+    <p style="color:#64748b;">
+        Latest 10 scans.
+        Horizontal axis: Scan number.
+        Vertical axis: Risk score.
+    </p>
+    
+        </section>
+
+        <section class="section">
+            <h2>Security Findings</h2>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Finding</th>
+                            <th>Severity</th>
+                            <th>Confidence</th>
+                            <th>Evidence</th>
+                            <th>Remediation</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        
+        <tr>
+            <td>1</td>
+            <td>Missing Content-Security-Policy</td>
+            <td>
+                <span class="tag medium">
+                    Medium
+                </span>
+            </td>
+            <td>High</td>
+            <td>Response did not include Content-Security-Policy.</td>
+            <td>Helps prevent content injection attacks.</td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>Missing Strict-Transport-Security</td>
+            <td>
+                <span class="tag medium">
+                    Medium
+                </span>
+            </td>
+            <td>High</td>
+            <td>Response did not include Strict-Transport-Security.</td>
+            <td>Enforces HTTPS connections.</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>Missing Referrer-Policy</td>
+            <td>
+                <span class="tag low">
+                    Low
+                </span>
+            </td>
+            <td>High</td>
+            <td>Response did not include Referrer-Policy.</td>
+            <td>Controls referrer information sharing.</td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>Missing Permissions-Policy</td>
+            <td>
+                <span class="tag low">
+                    Low
+                </span>
+            </td>
+            <td>High</td>
+            <td>Response did not include Permissions-Policy.</td>
+            <td>Controls access to browser features.</td>
+        </tr>
+        
+        <tr>
+            <td>5</td>
+            <td>HTTPS Not Enabled</td>
+            <td>
+                <span class="tag medium">
+                    Medium
+                </span>
+            </td>
+            <td>High</td>
+            <td>The target is using HTTP instead of HTTPS.</td>
+            <td>Configure HTTPS with a valid TLS certificate to protect data in transit.</td>
+        </tr>
+        
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        WebGuard v1.0.0 |
+        Automated Security Assessment Tool
+    </footer>
+
+</body>
+</html>

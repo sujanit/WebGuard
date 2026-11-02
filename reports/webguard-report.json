@@ -1,0 +1,52 @@
+{
+    "target": "http://127.0.0.1:3000",
+    "status_code": 200,
+    "findings_count": 5,
+    "risk_score": 24,
+    "risk_level": "High",
+    "findings": [
+        {
+            "title": "Missing Content-Security-Policy",
+            "severity": "Medium",
+            "confidence": "High",
+            "evidence": "Response did not include Content-Security-Policy.",
+            "remediation": "Helps prevent content injection attacks."
+        },
+        {
+            "title": "Missing Strict-Transport-Security",
+            "severity": "Medium",
+            "confidence": "High",
+            "evidence": "Response did not include Strict-Transport-Security.",
+            "remediation": "Enforces HTTPS connections."
+        },
+        {
+            "title": "Missing Referrer-Policy",
+            "severity": "Low",
+            "confidence": "High",
+            "evidence": "Response did not include Referrer-Policy.",
+            "remediation": "Controls referrer information sharing."
+        },
+        {
+            "title": "Missing Permissions-Policy",
+            "severity": "Low",
+            "confidence": "High",
+            "evidence": "Response did not include Permissions-Policy.",
+            "remediation": "Controls access to browser features."
+        },
+        {
+            "title": "HTTPS Not Enabled",
+            "severity": "Medium",
+            "confidence": "High",
+            "evidence": "The target is using HTTP instead of HTTPS.",
+            "remediation": "Configure HTTPS with a valid TLS certificate to protect data in transit."
+        }
+    ],
+    "scope": "Local loopback target only",
+    "severity_counts": {
+        "Critical": 0,
+        "High": 0,
+        "Medium": 3,
+        "Low": 2,
+        "Info": 0
+    }
+}
