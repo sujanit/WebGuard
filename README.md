@@ -1,194 +1,125 @@
+# WebGuard v1.1.0
 
-# WebGuard
-### Automated Web Application Security Assessment Tool
+**A Python-based local web application security scanner with FLAT Engine and Finite State Machine integration.**
 
-WebGuard is a Python-based web application security assessment tool designed to identify common web security misconfigurations, evaluate security risks, and generate detailed security reports.
+## Overview
 
-It is developed as a cybersecurity learning and portfolio project using OWASP Juice Shop as a local testing environment.
+WebGuard is a Python-based security scanner designed to identify common web application security misconfigurations in locally hosted applications.
+
+It analyzes HTTP responses, identifies missing security headers, evaluates cookie security and generates risk assessments with remediation suggestions.
 
 ## Features
 
-- HTTP security header analysis
-- Cookie security flag inspection
-- HTTPS scheme detection
-- HTTP Allow header inspection
-- Server header information detection
-- Localhost-only target validation
-- Custom risk scoring and severity classification
-- HTML, JSON and CSV security reports
-- Scan history and scan comparison
-- Security event logging
-- Vulnerability remediation tracking
-- Remediation dashboard with progress visualization
-- Remediation report export
-- Automated unit testing
+- Security header analysis
+- Cookie security checks
+- HTTPS configuration detection
+- HTTP response analysis
+- Risk scoring and severity classification
+- JSON, CSV and HTML report generation
+- Scan history tracking
+- FLAT Engine integration
+- Regular-expression-based URL and header validation
+- DFA-based HTTP/HTTPS scheme validation
+- FSM-based scan lifecycle management
+
+## FLAT Engine – v1.1.0
+
+The FLAT Engine introduces formal language concepts into WebGuard:
+
+- Regular Expressions (RE): URL and HTTP header-name validation.
+- Deterministic Finite Automaton (DFA): HTTP and HTTPS scheme validation.
+- Finite State Machine (FSM): Scan workflow tracking.
+
+### Scan workflow
+
+`INITIALIZED → VALIDATING → SCANNING → ANALYZING → REPORTING → COMPLETED`
 
 ## Technology Stack
 
-| Technology | Purpose |
-|---|---|
-| Python | Core development |
-| Requests | HTTP communication |
-| Pytest | Automated testing |
-| HTML/CSS | Report dashboards |
-| JSON | Report and tracker storage |
-| CSV | Report export |
-| Docker | Local testing environment |
-| OWASP Juice Shop | Vulnerable test application |
-
-## Project Structure
-
-```text
-WebGuard/
-│
-├── webguard/
-│   ├── __init__.py
-│   ├── checks.py
-│   ├── scanner.py
-│   ├── reporter.py
-│   ├── risk.py
-│   ├── logger.py
-│   ├── config.py
-│   ├── remediation.py
-│   ├── remediation_cli.py
-│   ├── remediation_dashboard.py
-│   └── remediation_export.py
-│
-├── tests/
-│   ├── test_checks.py
-│   ├── test_risk.py
-│   ├── test_scanner.py
-│   └── test_remediation.py
-│
-├── reports/
-├── logs/
-├── main.py
-├── requirements.txt
-└── README.md
-```
+- Python
+- Requests
+- Regular Expressions
+- Finite Automata
+- Finite State Machines
+- Pytest
+- Docker
+- OWASP Juice Shop
 
 ## Installation
-
-### 1. Clone the repository
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
 cd WebGuard
-```
 
-### 2. Create a virtual environment
+python -m venv .venv
+```
 
 Windows PowerShell:
 
 ```powershell
-python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-## Start the Testing Environment
+## Usage
 
-Install Docker Desktop and start OWASP Juice Shop:
+Start the local OWASP Juice Shop testing environment:
 
 ```bash
 docker run --rm -p 127.0.0.1:3000:3000 bkimminich/juice-shop
 ```
 
-Keep the container running while testing.
-
-## Usage
-
-### Run a security assessment
+Run WebGuard in another terminal:
 
 ```bash
 python main.py --target http://127.0.0.1:3000 --format all --history
 ```
 
-### Generate remediation dashboard
+## Example Scan Results
 
-```bash
-python -m webguard.remediation_dashboard
-```
+| Metric | Result |
+|---|---|
+| Target | 127.0.0.1:3000 |
+| HTTP Status | 200 |
+| Findings | 5 |
+| Risk Score | 24 |
+| Risk Level | High |
+| FLAT Engine | 1.1.0 |
+| Scan Status | COMPLETED |
 
-### Export remediation report
+*Example results from a local OWASP Juice Shop test. Risk scoring is WebGuard's own heuristic, not CVSS.*
 
-```bash
-python -m webguard.remediation_export
-```
+## Testing
 
-### View remediation findings
-
-```bash
-python -m webguard.remediation_cli --list
-```
-
-### Update remediation status
-
-```bash
-python -m webguard.remediation_cli --update FINDING_ID Fixed --notes "Security configuration reviewed and corrected."
-```
-
-### Run automated tests
+Run the automated test suite:
 
 ```bash
 python -m pytest -v
 ```
 
-## Generated Reports
+Latest recorded result: **54 tests passed.**
 
-WebGuard generates:
+## Security Scope
 
-- `webguard-report.json` – Structured security findings
-- `webguard-report.html` – Security assessment dashboard
-- `webguard-report.csv` – Findings in spreadsheet format
-- `scan-history.json` – Previous scan records
-- `remediation-tracker.json` – Remediation tracking information
-- `remediation-dashboard.html` – Remediation progress dashboard
-- `remediation-report.csv` – Remediation export
+WebGuard is designed for local testing environments. Its target validation restricts scanning to localhost and loopback IP addresses.
 
-## Risk Assessment
+Only scan applications you own or have explicit permission to test.
 
-WebGuard uses a custom heuristic risk scoring system to classify findings into:
+## Version History
 
-- Critical
-- High
-- Medium
-- Low
-
-The score is a project-specific prioritization mechanism and is not a CVSS score.
-
-## Security and Limitations
-
-- The scanner is restricted to localhost and loopback targets.
-- Redirect following is disabled.
-- The scanner performs non-invasive checks.
-- HTTP method inspection relies on the server's `Allow` response header.
-- HTTPS scheme detection does not constitute a complete TLS certificate assessment.
-- Findings indicate potential security misconfigurations and require manual verification.
-- A remediation status marked Fixed must be independently verified.
-
-Only use WebGuard against systems you own or have explicit permission to assess.
-
-## Future Enhancements
-
-- Additional OWASP security checks
-- More detailed TLS configuration assessment
-- Interactive remediation management
-- Enhanced vulnerability classification
-- PDF report generation
-- Improved dashboard analytics
+### v1.1.0
+- Integrated FLAT Engine.
+- Added DFA-based scheme validation.
+- Added FSM scan lifecycle management.
+- Added scan-state history metadata.
+- Updated scan reporting integration.
 
 ## Author
 
 **Sujan S**
 
-Cybersecurity | Ethical Hacking | Python Development
+GitHub: Add your GitHub profile link here.
 
-## Disclaimer
+---
 
-WebGuard is an educational cybersecurity project intended for authorized security testing and learning. The developer is not responsible for unauthorized use.
+*WebGuard – Local Web Application Security Scanner*
