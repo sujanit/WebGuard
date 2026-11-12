@@ -20,8 +20,23 @@ from webguard.config import (
     FOLLOW_REDIRECTS
 )
 
+from webguard.flat_engine import FlatEngine
+from webguard.scan_fsm import ScanStateMachine
+
+
+# Initialize FLAT components
+flat_engine = FlatEngine()
+
 
 def validate_target(url):
+
+    # Regular Expression validation
+    if not flat_engine.validate_url_pattern(url):
+        raise ValueError("URL does not match the accepted HTTP/HTTPS pattern.")
+
+    # DFA scheme validation
+    if not flat_engine.validate_url_scheme_dfa(url):
+        raise ValueError("DFA rejected the URL scheme.")
 
     parsed = urlparse(url)
 
@@ -71,14 +86,24 @@ def validate_target(url):
 
 def scan_target(url):
 
-    validate_target(url)
+    # Initialize FSM
+    fsm = ScanStateMachine()
 
-    session = requests.Session()
-
-    # Ignore inherited proxy configuration
-    session.trust_env = False
+    session = None
 
     try:
+
+        # State 1: Validate target
+        fsm.transition("VALIDATING")
+        validate_target(url)
+
+        # State 2: Start scanning
+        fsm.transition("SCANNING")
+
+        session = requests.Session()
+
+        # Ignore inherited proxy configuration
+        session.trust_env = False
 
         response = session.get(
             url,
@@ -86,6 +111,17 @@ def scan_target(url):
             allow_redirects=FOLLOW_REDIRECTS,
             verify=VERIFY_TLS
         )
+
+        # Validate received HTTP header names using RE
+        for header_name in response.headers.keys():
+
+            if not flat_engine.validate_header_name(header_name):
+                raise ValueError(
+                    f"Invalid HTTP header name: {header_name}"
+                )
+
+        # State 3: Analyze response
+        fsm.transition("ANALYZING")
 
         # Analyze security headers
         header_findings = inspect_headers(
@@ -124,15 +160,42 @@ def scan_target(url):
         # Calculate risk
         risk = calculate_risk(all_findings)
 
-        return {
+        # State 4: Prepare report
+        fsm.transition("REPORTING")
+
+        result = {
             "target": url,
             "status_code": response.status_code,
             "findings_count": len(all_findings),
             "risk_score": risk["risk_score"],
             "risk_level": risk["risk_level"],
             "findings": all_findings,
-            "scope": "Local loopback target only"
+            "scope": "Local loopback target only",
+
+            # FLAT engine information
+            "flat_engine": flat_engine.engine_name,
+            "flat_engine_version": flat_engine.version,
+            "fsm_history": fsm.get_history()
         }
 
+        # State 5: Complete scan
+        fsm.transition("COMPLETED")
+
+        # Include final FSM state
+        result["fsm_history"] = fsm.get_history()
+        result["scan_status"] = fsm.state
+
+        return result
+
+    except Exception:
+
+        # Record failed scan in FSM
+        if fsm.state not in ("COMPLETED", "FAILED"):
+            fsm.transition("FAILED")
+
+        raise
+
     finally:
-        session.close()
+
+        if session is not None:
+            session.close()

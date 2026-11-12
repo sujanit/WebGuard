@@ -1,6 +1,6 @@
-﻿Finding,Severity,Confidence,Evidence,Remediation
-Missing Content-Security-Policy,Medium,High,Response did not include Content-Security-Policy.,Helps prevent content injection attacks.
-Missing Strict-Transport-Security,Medium,High,Response did not include Strict-Transport-Security.,Enforces HTTPS connections.
-Missing Referrer-Policy,Low,High,Response did not include Referrer-Policy.,Controls referrer information sharing.
-Missing Permissions-Policy,Low,High,Response did not include Permissions-Policy.,Controls access to browser features.
-HTTPS Not Enabled,Medium,High,The target is using HTTP instead of HTTPS.,Configure HTTPS with a valid TLS certificate to protect data in transit.
+﻿Finding,Severity,Confidence,Evidence,Remediation,FLAT Engine,FLAT Version,Scan Status,FSM History
+Missing Content-Security-Policy,Medium,High,Response did not include Content-Security-Policy.,Helps prevent content injection attacks.,WebGuard FLAT Engine,1.1.0,COMPLETED,INITIALIZED -> VALIDATING -> SCANNING -> ANALYZING -> REPORTING -> COMPLETED
+Missing Strict-Transport-Security,Medium,High,Response did not include Strict-Transport-Security.,Enforces HTTPS connections.,WebGuard FLAT Engine,1.1.0,COMPLETED,INITIALIZED -> VALIDATING -> SCANNING -> ANALYZING -> REPORTING -> COMPLETED
+Missing Referrer-Policy,Low,High,Response did not include Referrer-Policy.,Controls referrer information sharing.,WebGuard FLAT Engine,1.1.0,COMPLETED,INITIALIZED -> VALIDATING -> SCANNING -> ANALYZING -> REPORTING -> COMPLETED
+Missing Permissions-Policy,Low,High,Response did not include Permissions-Policy.,Controls access to browser features.,WebGuard FLAT Engine,1.1.0,COMPLETED,INITIALIZED -> VALIDATING -> SCANNING -> ANALYZING -> REPORTING -> COMPLETED
+HTTPS Not Enabled,Medium,High,The target is using HTTP instead of HTTPS.,Configure HTTPS with a valid TLS certificate to protect data in transit.,WebGuard FLAT Engine,1.1.0,COMPLETED,INITIALIZED -> VALIDATING -> SCANNING -> ANALYZING -> REPORTING -> COMPLETED

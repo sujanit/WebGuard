@@ -4,6 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
@@ -200,6 +201,11 @@
 
         .scan-info p {
             overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        .workflow {
+            overflow-wrap: anywhere;
         }
 
         footer {
@@ -215,6 +221,22 @@
 
             .section {
                 padding: 17px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .section {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }
+
+            header {
+                print-color-adjust: exact;
             }
         }
     </style>
@@ -261,8 +283,14 @@
             <h2>Scan Information</h2>
 
             <p><strong>Target:</strong> http://127.0.0.1:3000</p>
-            <p><strong>Scan Time:</strong> 02 Nov 2026, 06:59 PM</p>
+            <p><strong>Scan Time:</strong> 12 Nov 2026, 07:30 PM</p>
             <p><strong>Scope:</strong> Local loopback target only</p>
+            <p><strong>FLAT Engine:</strong> WebGuard FLAT Engine</p>
+            <p><strong>FLAT Version:</strong> 1.1.0</p>
+            <p><strong>Scan Status:</strong> COMPLETED</p>
+            <p class="workflow">
+                <strong>FSM Workflow:</strong> INITIALIZED -&gt; VALIDATING -&gt; SCANNING -&gt; ANALYZING -&gt; REPORTING -&gt; COMPLETED
+            </p>
         </section>
 
         <section class="section">
@@ -306,26 +334,35 @@
             <div class="comparison-card">
                 <h3>Previous Risk</h3>
                 <p>24.0</p>
-                <span>High</span>
+                <span>
+                    High
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Current Risk</h3>
                 <p>24.0</p>
-                <span>High</span>
+                <span>
+                    High
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Risk Change</h3>
                 <p>+0</p>
-                <span>0.0% improvement</span>
+                <span>
+                    0.0% improvement
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Findings Change</h3>
                 <p>+0</p>
-                <span>Previous: 5 |
-                Current: 5</span>
+                <span>
+                    Previous: 5
+                    |
+                    Current: 5
+                </span>
             </div>
 
         </div>
@@ -338,9 +375,8 @@
             </h3>
 
             <p>
-                Unchanged compared with
-                the previous recorded scan based on the
-                custom risk score.
+                Unchanged compared with the previous
+                recorded scan based on the custom risk score.
             </p>
 
         </div>
@@ -438,70 +474,90 @@
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 1: Risk score 24.0</title>
+            <title>
+                Scan 1: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="127.77777777777777" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 2: Risk score 24.0</title>
+            <title>
+                Scan 2: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="195.55555555555554" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 3: Risk score 24.0</title>
+            <title>
+                Scan 3: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="263.33333333333337" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 4: Risk score 24.0</title>
+            <title>
+                Scan 4: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="331.1111111111111" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 5: Risk score 24.0</title>
+            <title>
+                Scan 5: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="398.8888888888889" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 6: Risk score 24.0</title>
+            <title>
+                Scan 6: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="466.6666666666667" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 7: Risk score 24.0</title>
+            <title>
+                Scan 7: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="534.4444444444445" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 8: Risk score 24.0</title>
+            <title>
+                Scan 8: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="602.2222222222222" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 9: Risk score 24.0</title>
+            <title>
+                Scan 9: Risk score 24.0
+            </title>
         </circle>
         
         <circle cx="670.0" cy="30.0" r="6"
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan 10: Risk score 24.0</title>
+            <title>
+                Scan 10: Risk score 24.0
+            </title>
         </circle>
         
             
@@ -678,7 +734,7 @@
     </main>
 
     <footer>
-        WebGuard v1.0.0 |
+        WebGuard v1.1.0 |
         Automated Security Assessment Tool
     </footer>
 

@@ -1,4 +1,3 @@
-
 import csv
 import json
 from pathlib import Path
@@ -11,7 +10,7 @@ REPORT_DIR = Path("reports")
 def prepare_report(report):
     """Prepare report data and severity distribution."""
 
-    findings = report.get("findings", [])
+    findings = report.get("findings") or []
 
     severity_counts = {
         "Critical": 0,
@@ -28,6 +27,7 @@ def prepare_report(report):
         )
 
     prepared = report.copy()
+    prepared["findings"] = findings
     prepared["findings_count"] = len(findings)
     prepared["severity_counts"] = severity_counts
     prepared["risk_score"] = report.get("risk_score", 0)
@@ -55,7 +55,7 @@ def save_json(report):
 
 
 def save_csv(report):
-    """Export security findings as CSV."""
+    """Export security findings and scan metadata as CSV."""
 
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -66,8 +66,29 @@ def save_csv(report):
         "Severity",
         "Confidence",
         "Evidence",
-        "Remediation"
+        "Remediation",
+        "FLAT Engine",
+        "FLAT Version",
+        "Scan Status",
+        "FSM History"
     ]
+
+    metadata = {
+        "FLAT Engine": report.get(
+            "flat_engine", "Not available"
+        ),
+        "FLAT Version": report.get(
+            "flat_engine_version", "Not available"
+        ),
+        "Scan Status": report.get(
+            "scan_status", "Not available"
+        ),
+        "FSM History": " -> ".join(
+            report.get("fsm_history") or []
+        )
+    }
+
+    findings = report.get("findings") or []
 
     with output.open(
         "w",
@@ -82,14 +103,31 @@ def save_csv(report):
 
         writer.writeheader()
 
-        for finding in report.get("findings", []):
-            writer.writerow({
-                "Finding": finding.get("title", "Unknown"),
-                "Severity": finding.get("severity", "Info"),
-                "Confidence": finding.get("confidence", "Unknown"),
-                "Evidence": finding.get("evidence", ""),
-                "Remediation": finding.get("remediation", "")
-            })
+        if findings:
+            for finding in findings:
+                row = {
+                    "Finding": finding.get("title", "Unknown"),
+                    "Severity": finding.get("severity", "Info"),
+                    "Confidence": finding.get("confidence", "Unknown"),
+                    "Evidence": finding.get("evidence", ""),
+                    "Remediation": finding.get("remediation", "")
+                }
+
+                row.update(metadata)
+                writer.writerow(row)
+
+        else:
+            # Preserve scan metadata even when no findings exist.
+            empty_row = {
+                "Finding": "No findings detected",
+                "Severity": "Info",
+                "Confidence": "N/A",
+                "Evidence": "",
+                "Remediation": ""
+            }
+
+            empty_row.update(metadata)
+            writer.writerow(empty_row)
 
     return output
 
@@ -107,10 +145,20 @@ def save_history(report):
         "status_code": report.get("status_code"),
         "findings_count": report.get(
             "findings_count",
-            len(report.get("findings", []))
+            len(report.get("findings") or [])
         ),
         "risk_score": report.get("risk_score", 0),
-        "risk_level": report.get("risk_level", "Unknown")
+        "risk_level": report.get("risk_level", "Unknown"),
+        "flat_engine": report.get(
+            "flat_engine", "Not available"
+        ),
+        "flat_engine_version": report.get(
+            "flat_engine_version", "Not available"
+        ),
+        "scan_status": report.get(
+            "scan_status", "Not available"
+        ),
+        "fsm_history": report.get("fsm_history") or []
     }
 
     if history_file.exists():
@@ -127,6 +175,7 @@ def save_history(report):
                 "Scan history file is invalid. "
                 "Back it up before repairing it."
             )
+
     else:
         history = []
 
@@ -141,7 +190,7 @@ def save_history(report):
 
 
 def compare_scans(history_file, target):
-    """Compare the latest two saved scans."""
+    """Compare the latest two saved scans for a target."""
 
     history = json.loads(
         Path(history_file).read_text(encoding="utf-8")
@@ -164,13 +213,26 @@ def compare_scans(history_file, target):
 def calculate_comparison(previous, current):
     """Calculate differences between two scans."""
 
-    previous_findings = int(previous.get("findings_count", 0))
-    current_findings = int(current.get("findings_count", 0))
+    previous_findings = int(
+        previous.get("findings_count", 0)
+    )
 
-    previous_risk = float(previous.get("risk_score", 0))
-    current_risk = float(current.get("risk_score", 0))
+    current_findings = int(
+        current.get("findings_count", 0)
+    )
 
-    findings_change = current_findings - previous_findings
+    previous_risk = float(
+        previous.get("risk_score", 0)
+    )
+
+    current_risk = float(
+        current.get("risk_score", 0)
+    )
+
+    findings_change = (
+        current_findings - previous_findings
+    )
+
     risk_change = current_risk - previous_risk
 
     if previous_risk > 0:
@@ -209,7 +271,7 @@ def calculate_comparison(previous, current):
 
 
 def compare_current_with_history(report):
-    """Compare the current scan with the latest saved scan."""
+    """Compare current scan with the latest saved scan."""
 
     history_file = REPORT_DIR / "scan-history.json"
 
@@ -235,7 +297,9 @@ def compare_current_with_history(report):
 
     current = {
         "target": report.get("target"),
-        "findings_count": len(report.get("findings", [])),
+        "findings_count": len(
+            report.get("findings") or []
+        ),
         "risk_score": report.get("risk_score", 0),
         "risk_level": report.get("risk_level", "Unknown")
     }
@@ -310,7 +374,9 @@ def build_scan_trend_svg(target):
                 fill="#2563eb"
                 stroke="white"
                 stroke-width="2">
-            <title>Scan {index + 1}: Risk score {scores[index]}</title>
+            <title>
+                Scan {index + 1}: Risk score {scores[index]}
+            </title>
         </circle>
         """
 
@@ -405,13 +471,30 @@ def save_html(report):
         "%d %b %Y, %I:%M %p"
     )
 
+    flat_engine = escape(
+        str(report.get("flat_engine", "Not available"))
+    )
+
+    flat_version = escape(
+        str(report.get("flat_engine_version", "Not available"))
+    )
+
+    scan_status = escape(
+        str(report.get("scan_status", "Not available"))
+    )
+
+    fsm_history = escape(
+        " -> ".join(report.get("fsm_history") or [])
+    )
+
     trend_chart = build_scan_trend_svg(target_value)
 
     comparison = compare_current_with_history(report)
 
     if comparison:
-
-        comparison_status = escape(comparison["status"])
+        comparison_status = escape(
+            comparison["status"]
+        )
 
         comparison_color = {
             "Improved": "#15803d",
@@ -425,26 +508,35 @@ def save_html(report):
             <div class="comparison-card">
                 <h3>Previous Risk</h3>
                 <p>{comparison["previous_risk"]}</p>
-                <span>{escape(str(comparison["previous_risk_level"]))}</span>
+                <span>
+                    {escape(str(comparison["previous_risk_level"]))}
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Current Risk</h3>
                 <p>{comparison["current_risk"]}</p>
-                <span>{escape(str(comparison["current_risk_level"]))}</span>
+                <span>
+                    {escape(str(comparison["current_risk_level"]))}
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Risk Change</h3>
                 <p>{comparison["risk_change"]:+g}</p>
-                <span>{comparison["improvement_percentage"]}% improvement</span>
+                <span>
+                    {comparison["improvement_percentage"]}% improvement
+                </span>
             </div>
 
             <div class="comparison-card">
                 <h3>Findings Change</h3>
                 <p>{comparison["findings_change"]:+d}</p>
-                <span>Previous: {comparison["previous_findings"]} |
-                Current: {comparison["current_findings"]}</span>
+                <span>
+                    Previous: {comparison["previous_findings"]}
+                    |
+                    Current: {comparison["current_findings"]}
+                </span>
             </div>
 
         </div>
@@ -457,9 +549,8 @@ def save_html(report):
             </h3>
 
             <p>
-                {escape(comparison_status)} compared with
-                the previous recorded scan based on the
-                custom risk score.
+                {comparison_status} compared with the previous
+                recorded scan based on the custom risk score.
             </p>
 
         </div>
@@ -479,7 +570,7 @@ def save_html(report):
     for severity, count in severity_counts.items():
         severity_cards += f"""
         <div class="severity-card {severity.lower()}">
-            <h3>{severity}</h3>
+            <h3>{escape(severity)}</h3>
             <p>{count}</p>
         </div>
         """
@@ -488,16 +579,27 @@ def save_html(report):
 
     for index, finding in enumerate(findings, start=1):
 
-        title = escape(str(finding.get("title", "Unknown")))
-        severity = escape(
-            str(finding.get("severity", "Info"))
+        title = escape(
+            str(finding.get("title", "Unknown"))
         )
+
+        severity = str(
+            finding.get("severity", "Info")
+        )
+
+        safe_severity = escape(severity)
+        severity_class = escape(
+            severity.lower()
+        )
+
         confidence = escape(
             str(finding.get("confidence", "Unknown"))
         )
+
         evidence = escape(
             str(finding.get("evidence", "Not provided"))
         )
+
         remediation = escape(
             str(finding.get("remediation", "No recommendation"))
         )
@@ -507,8 +609,8 @@ def save_html(report):
             <td>{index}</td>
             <td>{title}</td>
             <td>
-                <span class="tag {severity.lower()}">
-                    {severity}
+                <span class="tag {severity_class}">
+                    {safe_severity}
                 </span>
             </td>
             <td>{confidence}</td>
@@ -532,6 +634,7 @@ def save_html(report):
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
@@ -728,6 +831,11 @@ def save_html(report):
 
         .scan-info p {{
             overflow-wrap: anywhere;
+            line-height: 1.6;
+        }}
+
+        .workflow {{
+            overflow-wrap: anywhere;
         }}
 
         footer {{
@@ -743,6 +851,22 @@ def save_html(report):
 
             .section {{
                 padding: 17px;
+            }}
+        }}
+
+        @media print {{
+            body {{
+                background: white;
+            }}
+
+            .section {{
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }}
+
+            header {{
+                print-color-adjust: exact;
             }}
         }}
     </style>
@@ -791,6 +915,12 @@ def save_html(report):
             <p><strong>Target:</strong> {target}</p>
             <p><strong>Scan Time:</strong> {scan_time}</p>
             <p><strong>Scope:</strong> Local loopback target only</p>
+            <p><strong>FLAT Engine:</strong> {flat_engine}</p>
+            <p><strong>FLAT Version:</strong> {flat_version}</p>
+            <p><strong>Scan Status:</strong> {scan_status}</p>
+            <p class="workflow">
+                <strong>FSM Workflow:</strong> {fsm_history}
+            </p>
         </section>
 
         <section class="section">
@@ -837,7 +967,7 @@ def save_html(report):
     </main>
 
     <footer>
-        WebGuard v1.0.0 |
+        WebGuard v1.1.0 |
         Automated Security Assessment Tool
     </footer>
 
