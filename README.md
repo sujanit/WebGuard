@@ -118,8 +118,7 @@ Only scan applications you own or have explicit permission to test.
 
 **Sujan S**
 
-GitHub: Add your GitHub profile link here.
-
+GitHub:https://github.com/sujanit
 ---
 
 *WebGuard – Local Web Application Security Scanner*
