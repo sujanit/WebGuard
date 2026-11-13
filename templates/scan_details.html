@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGuard Scan Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🛡️ WebGuard</h1>
+        <p>Individual Security Scan Report</p>
+    </div>
+
+    <a href="/" class="back-button">← Back to Dashboard</a>
+</header>
+
+<section class="section">
+
+    <h2>Scan Information</h2>
+
+    <div class="scan-meta">
+
+        <div class="meta-item">
+            <p>Target</p>
+            <strong>{{ scan.target }}</strong>
+        </div>
+
+        <div class="meta-item">
+            <p>Risk Score</p>
+            <strong>{{ scan.risk_score }}</strong>
+        </div>
+
+        <div class="meta-item">
+            <p>Risk Level</p>
+            <strong class="{{ scan.risk_level }}">
+                {{ scan.risk_level }}
+            </strong>
+        </div>
+
+        <div class="meta-item">
+            <p>Scan Status</p>
+            <strong>{{ scan.scan_status }}</strong>
+        </div>
+
+        <div class="meta-item">
+            <p>HTTP Status</p>
+            <strong>{{ scan.status_code }}</strong>
+        </div>
+
+        <div class="meta-item">
+            <p>FLAT Engine</p>
+            <strong>{{ scan.flat_engine_version or "N/A" }}</strong>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="section">
+
+    <h2>Vulnerability Findings</h2>
+
+    {% if scan.findings %}
+
+        {% for finding in scan.findings %}
+
+            <div class="finding {{ finding.severity }}">
+
+                <h3>{{ finding.title }}</h3>
+
+                <span class="severity {{ finding.severity }}">
+                    {{ finding.severity }} Severity
+                </span>
+
+                <p>
+                    <strong>Evidence:</strong>
+                    {{ finding.evidence }}
+                </p>
+
+                <p>
+                    <strong>Remediation:</strong>
+                    {{ finding.remediation }}
+                </p>
+
+                <p>
+                    <strong>Confidence:</strong>
+                    {{ finding.confidence }}
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No vulnerabilities found.</p>
+
+    {% endif %}
+
+</section>
+
+<section class="section">
+
+    <h2>Scan Workflow (FSM)</h2>
+
+    {% if scan.fsm_history %}
+
+        {% for state in scan.fsm_history %}
+
+            <p style="margin: 12px 0; color: #4ade80;">
+                ✓ {{ state }}
+            </p>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>FSM history not available for this scan.</p>
+
+    {% endif %}
+
+</section>
+
+<footer>
+    WebGuard Security Scanner | Scan Report
+</footer>
+
+</body>
+</html>

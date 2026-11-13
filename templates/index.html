@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGuard Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🛡️ WebGuard</h1>
+        <p>Web Application Security Monitoring Dashboard</p>
+    </div>
+
+    <button onclick="loadDashboard()">↻ Refresh Dashboard</button>
+</header>
+
+<section class="cards">
+    <div class="card">
+        <h3>Total Scans</h3>
+        <h2 id="totalScans">0</h2>
+    </div>
+
+    <div class="card">
+        <h3>High Risk Scans</h3>
+        <h2 id="highRisk">0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Total Findings</h3>
+        <h2 id="totalFindings">0</h2>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Recent Scan History</h2>
+    <p id="message">Loading scan history...</p>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Target</th>
+                    <th>Risk Score</th>
+                    <th>Risk Level</th>
+                    <th>Findings</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+
+            <tbody id="scanTable"></tbody>
+        </table>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Latest Scan Vulnerabilities</h2>
+    <p id="findingsMessage">Loading vulnerabilities...</p>
+    <div id="findingsList"></div>
+</section>
+
+<footer>
+    WebGuard Security Scanner | FLAT Engine v1.1.0
+</footer>
+
+<script>
+
+async function loadDashboard() {
+
+    const message = document.getElementById("message");
+    const findingsMessage = document.getElementById("findingsMessage");
+
+    message.textContent = "Loading scan history...";
+    findingsMessage.textContent = "Loading vulnerabilities...";
+
+    try {
+
+        const statsResponse = await fetch("/api/stats");
+
+        if (!statsResponse.ok) {
+            throw new Error("Unable to load statistics");
+        }
+
+        const stats = await statsResponse.json();
+
+        document.getElementById("totalScans").textContent =
+            stats.total_scans ?? 0;
+
+        document.getElementById("highRisk").textContent =
+            stats.high_risk_scans ?? 0;
+
+        document.getElementById("totalFindings").textContent =
+            stats.total_findings ?? 0;
+
+        const response = await fetch("/api/scans");
+
+        if (!response.ok) {
+            throw new Error("Unable to load scan history");
+        }
+
+        const scans = await response.json();
+
+        const table = document.getElementById("scanTable");
+        table.replaceChildren();
+
+        if (!Array.isArray(scans) || scans.length === 0) {
+            message.textContent = "No scans available.";
+            findingsMessage.textContent = "No vulnerabilities available.";
+            document.getElementById("findingsList").replaceChildren();
+            return;
+        }
+
+        message.textContent = "";
+
+        scans.forEach(scan => {
+
+            const row = document.createElement("tr");
+
+            const values = [
+                scan.target || "N/A",
+                scan.risk_score ?? "N/A",
+                scan.risk_level || "N/A",
+                scan.findings_count ??
+                    (Array.isArray(scan.findings) ? scan.findings.length : 0),
+                scan.scan_status || "N/A"
+            ];
+
+            values.forEach((value, index) => {
+
+                const cell = document.createElement("td");
+
+                if (index === 0) {
+                    const target = document.createElement("span");
+                    target.className = "target";
+                    target.textContent = value;
+                    cell.appendChild(target);
+                } else {
+                    cell.textContent = value;
+                }
+
+                if (index === 2) {
+                    cell.className = String(value);
+                }
+
+                if (index === 4) {
+                    cell.className = "status";
+                }
+
+                row.appendChild(cell);
+            });
+
+            const detailsCell = document.createElement("td");
+            const link = document.createElement("a");
+
+            link.href = "/scan/" + encodeURIComponent(scan._id);
+            link.textContent = "View Details";
+            link.className = "details-link";
+
+            detailsCell.appendChild(link);
+            row.appendChild(detailsCell);
+
+            table.appendChild(row);
+        });
+
+        displayFindings(scans[0]);
+
+    } catch (error) {
+
+        message.textContent = error.message;
+        findingsMessage.textContent = "Unable to load vulnerability details.";
+
+        console.error(error);
+    }
+}
+
+
+function displayFindings(scan) {
+
+    const container = document.getElementById("findingsList");
+    const message = document.getElementById("findingsMessage");
+
+    container.replaceChildren();
+
+    const findings = Array.isArray(scan.findings)
+        ? scan.findings : [];
+
+    if (findings.length === 0) {
+        message.textContent = "No vulnerabilities found.";
+        return;
+    }
+
+    message.textContent =
+        "Latest target: " + (scan.target || "N/A") +
+        " | Risk level: " + (scan.risk_level || "N/A");
+
+    findings.forEach(finding => {
+
+        const severity = finding.severity || "Info";
+
+        const card = document.createElement("div");
+        card.className = "finding " + severity;
+
+        const title = document.createElement("h3");
+        title.textContent = finding.title || "Untitled finding";
+
+        const badge = document.createElement("span");
+        badge.className = "severity " + severity;
+        badge.textContent = severity + " Severity";
+
+        const evidence = document.createElement("p");
+        evidence.textContent =
+            "Evidence: " + (finding.evidence || "Not available");
+
+        const remediation = document.createElement("p");
+        remediation.textContent =
+            "Remediation: " + (finding.remediation || "Not available");
+
+        const confidence = document.createElement("p");
+        confidence.textContent =
+            "Confidence: " + (finding.confidence || "Not available");
+
+        card.append(title, badge, evidence, remediation, confidence);
+        container.appendChild(card);
+    });
+}
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>

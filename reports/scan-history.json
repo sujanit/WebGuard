@@ -113,5 +113,24 @@
             "REPORTING",
             "COMPLETED"
         ]
+    },
+    {
+        "scanned_at": "2026-11-13T13:26:59.230969+00:00",
+        "target": "http://127.0.0.1:3000",
+        "status_code": 200,
+        "findings_count": 5,
+        "risk_score": 24,
+        "risk_level": "High",
+        "flat_engine": "WebGuard FLAT Engine",
+        "flat_engine_version": "1.1.0",
+        "scan_status": "COMPLETED",
+        "fsm_history": [
+            "INITIALIZED",
+            "VALIDATING",
+            "SCANNING",
+            "ANALYZING",
+            "REPORTING",
+            "COMPLETED"
+        ]
     }
 ]

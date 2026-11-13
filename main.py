@@ -20,6 +20,12 @@ from webguard.remediation import (
     get_remediation_summary
 )
 
+from database import (
+    connect_database,
+    save_scan_result,
+    close_database
+)
+
 
 def display_banner():
     print("\n" + "=" * 40)
@@ -75,37 +81,14 @@ def display_comparison(comparison):
         print("Not enough previous scans for comparison.")
         return
 
-    print(
-        f"Previous Risk Score : {comparison['previous_risk']}"
-    )
-
-    print(
-        f"Current Risk Score  : {comparison['current_risk']}"
-    )
-
-    print(
-        f"Risk Change         : {comparison['risk_change']:+g}"
-    )
-
-    print(
-        f"Previous Findings   : {comparison['previous_findings']}"
-    )
-
-    print(
-        f"Current Findings    : {comparison['current_findings']}"
-    )
-
-    print(
-        f"Findings Change     : {comparison['findings_change']:+d}"
-    )
-
-    print(
-        f"Improvement         : {comparison['improvement_percentage']}%"
-    )
-
-    print(
-        f"Assessment          : {comparison['status']}"
-    )
+    print(f"Previous Risk Score : {comparison['previous_risk']}")
+    print(f"Current Risk Score  : {comparison['current_risk']}")
+    print(f"Risk Change         : {comparison['risk_change']:+g}")
+    print(f"Previous Findings   : {comparison['previous_findings']}")
+    print(f"Current Findings    : {comparison['current_findings']}")
+    print(f"Findings Change     : {comparison['findings_change']:+d}")
+    print(f"Improvement         : {comparison['improvement_percentage']}%")
+    print(f"Assessment          : {comparison['status']}")
 
 
 def main():
@@ -150,6 +133,8 @@ def main():
 
     logger.info("Starting security assessment")
 
+    database_connected = False
+
     try:
 
         # Step 1: Execute security scan
@@ -157,7 +142,37 @@ def main():
 
         logger.info("HTTP request completed successfully")
 
-        # Step 2: Register detected vulnerabilities
+        # Step 2: Connect to MongoDB and save scan
+        try:
+
+            connect_database()
+            database_connected = True
+
+            save_scan_result(report)
+
+            logger.info("Scan result saved to MongoDB Atlas")
+
+        except Exception as db_error:
+
+            logger.error(
+                "MongoDB save failed: %s",
+                db_error
+            )
+
+            print(
+                f"\n[!] MongoDB Error: {db_error}"
+            )
+
+            print(
+                "[!] Scan completed, but database storage failed."
+            )
+
+        finally:
+
+            if database_connected:
+                close_database()
+
+        # Step 3: Register detected vulnerabilities
         tracker = register_findings(
             report.get("findings", [])
         )
@@ -167,10 +182,10 @@ def main():
             len(tracker)
         )
 
-        # Step 3: Display findings
+        # Step 4: Display findings
         display_findings(report)
 
-        # Step 4: Generate selected reports
+        # Step 5: Generate reports
         generated_reports = []
 
         if args.format in ("json", "all"):
@@ -203,9 +218,7 @@ def main():
                 csv_file
             )
 
-        # Step 5: Save history after HTML generation.
-        # This allows the HTML dashboard to compare the
-        # current scan against the previous saved scan.
+        # Step 6: Save local scan history
         comparison = None
 
         if args.history:
@@ -222,14 +235,14 @@ def main():
                 args.target
             )
 
-        # Step 6: Display remediation summary
+        # Step 7: Display remediation summary
         display_remediation_summary()
 
-        # Step 7: Display scan comparison
+        # Step 8: Display scan comparison
         if args.history:
             display_comparison(comparison)
 
-        # Step 8: Display risk assessment
+        # Step 9: Display risk assessment
         print("\n" + "=" * 40)
         print("        ASSESSMENT SUMMARY")
         print("=" * 40)
@@ -250,7 +263,7 @@ def main():
             f"Findings    : {report.get('findings_count', 0)}"
         )
 
-        # Step 9: Display generated report paths
+        # Step 10: Display generated reports
         print("\n" + "=" * 40)
         print("        GENERATED REPORTS")
         print("=" * 40)
@@ -270,33 +283,25 @@ def main():
     except ValueError as error:
 
         logger.error("Validation error: %s", error)
-
         print(f"\n[!] Validation Error: {error}")
-
         sys.exit(1)
 
     except requests.RequestException as error:
 
         logger.error("HTTP request failed: %s", error)
-
         print(f"\n[!] HTTP request failed: {error}")
-
         sys.exit(1)
 
     except OSError as error:
 
         logger.error("File operation failed: %s", error)
-
         print(f"\n[!] File Error: {error}")
-
         sys.exit(1)
 
     except Exception as error:
 
         logger.exception("Unexpected application error")
-
         print(f"\n[!] Unexpected Error: {error}")
-
         sys.exit(1)
 
 
