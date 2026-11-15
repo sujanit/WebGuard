@@ -6,6 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGuard Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .subject-section {
+            margin: 25px 0;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 18px;
+        }
+
+        .subject-card {
+            background: #172235;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 22px;
+            transition: 0.3s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            border-color: #38bdf8;
+        }
+
+        .subject-card h3 {
+            color: #38bdf8;
+            margin-bottom: 12px;
+        }
+
+        .subject-card p {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .subject-link {
+            display: inline-block;
+            background: #0369a1;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 7px;
+            text-decoration: none;
+        }
+
+        .subject-link:hover {
+            background: #0284c7;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,6 +69,45 @@
     <button onclick="loadDashboard()">↻ Refresh Dashboard</button>
 </header>
 
+<!-- SUBJECT DASHBOARDS -->
+<section class="section subject-section">
+    <h2>WebGuard Implementation Dashboards</h2>
+    <p>Explore the concepts implemented in the WebGuard project.</p>
+
+    <div class="subject-grid">
+
+        <div class="subject-card">
+            <h3>🌐 Computer Networks (CN)</h3>
+            <p>
+                Understand WebGuard client-server communication,
+                HTTP requests and responses, TCP/IP, ports and MongoDB connectivity.
+            </p>
+            <a href="/cn" class="subject-link">Open CN Dashboard →</a>
+        </div>
+
+        <div class="subject-card">
+            <h3>⚙️ FLAT</h3>
+            <p>
+                Explore the actual WebGuard implementation of
+                Regular Expressions, DFA URL validation and
+                Finite State Machine scan workflow.
+            </p>
+            <a href="/flat" class="subject-link">Open FLAT Dashboard →</a>
+        </div>
+
+        <div class="subject-card">
+            <h3>💻 FSWD</h3>
+            <p>
+                Understand WebGuard's HTML, CSS, JavaScript,
+                Flask backend, MongoDB Atlas, APIs and report generation.
+            </p>
+            <a href="/fswd" class="subject-link">Open FSWD Dashboard →</a>
+        </div>
+
+    </div>
+</section>
+
+<!-- STATISTICS -->
 <section class="cards">
     <div class="card">
         <h3>Total Scans</h3>
@@ -36,6 +125,7 @@
     </div>
 </section>
 
+<!-- SCAN HISTORY -->
 <section class="section">
     <h2>Recent Scan History</h2>
     <p id="message">Loading scan history...</p>
@@ -58,6 +148,7 @@
     </div>
 </section>
 
+<!-- VULNERABILITIES -->
 <section class="section">
     <h2>Latest Scan Vulnerabilities</h2>
     <p id="findingsMessage">Loading vulnerabilities...</p>

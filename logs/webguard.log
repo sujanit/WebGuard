@@ -226,3 +226,14 @@ when serializing dict item '_id'
 2026-11-13 18:56:59,230 | INFO | CSV report generated: reports\webguard-report.csv
 2026-11-13 18:56:59,232 | INFO | Scan history saved: reports\scan-history.json
 2026-11-13 18:56:59,260 | INFO | Security assessment completed successfully
+2026-11-15 18:41:53,438 | INFO | WebGuard application started
+2026-11-15 18:41:53,439 | INFO | Target selected: http://127.0.0.1:3000
+2026-11-15 18:41:53,440 | INFO | Report format: all
+2026-11-15 18:41:53,441 | INFO | Starting security assessment
+2026-11-15 18:41:53,584 | INFO | HTTP request completed successfully
+2026-11-15 18:41:57,287 | INFO | Scan result saved to MongoDB Atlas
+2026-11-15 18:41:57,697 | INFO | Remediation tracker updated: 5 findings
+2026-11-15 18:41:57,704 | INFO | JSON report generated: reports\webguard-report.json
+2026-11-15 18:41:57,820 | INFO | HTML report generated: reports\webguard-report.html
+2026-11-15 18:41:57,825 | INFO | CSV report generated: reports\webguard-report.csv
+2026-11-15 18:41:57,831 | INFO | Security assessment completed successfully

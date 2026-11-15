@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebGuard | CN Architecture</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+    color: #e5e7eb;
+    padding: 24px;
+}
+
+header {
+    margin-bottom: 25px;
+}
+
+header h1 {
+    color: #38bdf8;
+    margin-bottom: 8px;
+}
+
+header p, .muted {
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.section {
+    background: #172235;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+h2 {
+    color: #38bdf8;
+    margin-bottom: 15px;
+}
+
+h3 {
+    margin-bottom: 10px;
+    color: #7dd3fc;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    background: #263750;
+    border: 1px solid #475569;
+    border-radius: 9px;
+    padding: 17px;
+}
+
+.card p {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-top: 8px;
+}
+
+.diagram {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 25px 5px;
+}
+
+.node {
+    background: #263750;
+    border: 2px solid #38bdf8;
+    border-radius: 9px;
+    padding: 16px;
+    min-width: 130px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.node small {
+    display: block;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+.arrow {
+    color: #38bdf8;
+    font-size: 25px;
+}
+
+.info {
+    background: #0f1b2e;
+    border-left: 4px solid #38bdf8;
+    border-radius: 8px;
+    padding: 17px;
+    line-height: 1.7;
+    margin-top: 15px;
+}
+
+button {
+    background: #263750;
+    color: white;
+    border: 1px solid #475569;
+    padding: 11px 15px;
+    border-radius: 7px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover, button.active {
+    background: #0369a1;
+    border-color: #38bdf8;
+}
+
+.flow-step {
+    background: #263750;
+    padding: 13px;
+    margin: 9px 0;
+    border-radius: 7px;
+    border-left: 4px solid #22c55e;
+    line-height: 1.6;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th, td {
+    text-align: left;
+    padding: 13px;
+    border-bottom: 1px solid #334155;
+    line-height: 1.5;
+}
+
+th {
+    color: #38bdf8;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+}
+
+@media(max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .section {
+        padding: 15px;
+    }
+
+    table {
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<a href="/" class="back">← Back to WebGuard</a>
+
+<header>
+    <h1>🌐 WebGuard - Computer Networks</h1>
+    <p>Network architecture and communication protocols used in the WebGuard implementation.</p>
+</header>
+
+<!-- ARCHITECTURE -->
+<section class="section">
+    <h2>1. WebGuard Network Architecture</h2>
+
+    <p class="muted">
+        This diagram represents the actual communication flow in your project.
+    </p>
+
+    <div class="diagram">
+        <div class="node">
+            WebGuard Scanner
+            <small>Python</small>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="node">
+            Juice Shop
+            <small>127.0.0.1:3000</small>
+        </div>
+    </div>
+
+    <div class="diagram">
+        <div class="node">
+            Browser
+            <small>Client</small>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="node">
+            Flask Server
+            <small>127.0.0.1:5000</small>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="node">
+            MongoDB Atlas
+            <small>Cloud database</small>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>Architecture Explanation</h3>
+        <p>
+            The Python scanner sends HTTP requests to the authorized local
+            Juice Shop target. Flask serves the WebGuard dashboard and APIs.
+            MongoDB Atlas stores scan history and findings through PyMongo.
+        </p>
+        <p>
+            These are two related communication flows: scanner-to-target
+            and dashboard-to-database. The browser does not directly connect
+            to MongoDB.
+        </p>
+    </div>
+</section>
+
+<!-- CLIENT SERVER -->
+<section class="section">
+    <h2>2. Client-Server Communication</h2>
+
+    <div class="diagram">
+        <div class="node">
+            Browser
+            <small>Client</small>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="node">
+            Flask
+            <small>Server :5000</small>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="node">
+            HTML Response
+            <small>Dashboard</small>
+        </div>
+    </div>
+
+    <h3>WebGuard Flask Routes</h3>
+
+    <div class="grid">
+        <div class="card">
+            <h3>GET /</h3>
+            <p>Loads the main WebGuard dashboard.</p>
+        </div>
+
+        <div class="card">
+            <h3>GET /cn</h3>
+            <p>Loads the Computer Networks dashboard.</p>
+        </div>
+
+        <div class="card">
+            <h3>GET /api/scans</h3>
+            <p>Returns stored scan history as JSON.</p>
+        </div>
+
+        <div class="card">
+            <h3>GET /api/stats</h3>
+            <p>Returns scan statistics as JSON.</p>
+        </div>
+
+        <div class="card">
+            <h3>GET /scan/&lt;scan_id&gt;</h3>
+            <p>Displays an individual scan report.</p>
+        </div>
+    </div>
+</section>
+
+<!-- HTTP COMMUNICATION -->
+<section class="section">
+    <h2>3. HTTP Request and Response</h2>
+
+    <p class="muted">
+        WebGuard uses HTTP requests to communicate with its local test target
+        and HTTP routes to serve its dashboard.
+    </p>
+
+    <div class="diagram">
+        <div class="node">Python Scanner</div>
+        <div class="arrow">→</div>
+        <div class="node">HTTP Request</div>
+        <div class="arrow">→</div>
+        <div class="node">Juice Shop</div>
+    </div>
+
+    <div class="diagram">
+        <div class="node">Juice Shop</div>
+        <div class="arrow">→</div>
+        <div class="node">HTTP Response</div>
+        <div class="arrow">→</div>
+        <div class="node">WebGuard Checks</div>
+    </div>
+
+    <div class="info">
+        <h3>Example HTTP Response</h3>
+        <p>Status Code: 200 OK</p>
+        <p>Content-Type: Application Response</p>
+        <p>Security Headers: Inspected by WebGuard</p>
+        <p>Target: http://127.0.0.1:3000</p>
+    </div>
+
+    <p class="muted">
+        The example represents the local Juice Shop scan used in your
+        previous testing. Actual response headers depend on the target.
+    </p>
+</section>
+
+<!-- TCP IP -->
+<section class="section">
+    <h2>4. TCP/IP Concepts Used in WebGuard</h2>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Application Layer</h3>
+            <p>HTTP requests, HTTP responses and application-level communication.</p>
+        </div>
+
+        <div class="card">
+            <h3>Transport Layer</h3>
+            <p>TCP provides transport for HTTP and HTTPS connections.</p>
+        </div>
+
+        <div class="card">
+            <h3>Internet Layer</h3>
+            <p>IP addressing identifies the local loopback destination 127.0.0.1.</p>
+        </div>
+
+        <div class="card">
+            <h3>Network Access Layer</h3>
+            <p>Handles the underlying local network transmission.</p>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>Important Networking Detail</h3>
+        <p>
+            HTTP uses TCP in the configurations used by this project.
+            HTTPS uses TLS over TCP. The exact transport depends on the
+            connection being made.
+        </p>
+    </div>
+</section>
+
+<!-- PORTS -->
+<section class="section">
+    <h2>5. Ports Used in WebGuard</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Port / Address</th>
+                <th>Component</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>127.0.0.1:3000</td>
+                <td>Juice Shop</td>
+                <td>Local web application target</td>
+            </tr>
+
+            <tr>
+                <td>127.0.0.1:5000</td>
+                <td>Flask</td>
+                <td>WebGuard dashboard and API server</td>
+            </tr>
+
+            <tr>
+                <td>MongoDB Atlas endpoint</td>
+                <td>MongoDB</td>
+                <td>Remote database connection through PyMongo</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="info">
+        <h3>What is a Port?</h3>
+        <p>
+            A port identifies a service or application endpoint on a host.
+            WebGuard uses different local ports for Flask and Juice Shop.
+            MongoDB Atlas uses its configured connection endpoint and port.
+        </p>
+    </div>
+</section>
+
+<!-- PROTOCOL EXPLORER -->
+<section class="section">
+    <h2>6. Protocols Relevant to WebGuard</h2>
+
+    <div>
+        <button onclick="showProtocol('HTTP', this)">HTTP</button>
+        <button onclick="showProtocol('HTTPS', this)">HTTPS</button>
+        <button onclick="showProtocol('TCP', this)">TCP</button>
+        <button onclick="showProtocol('IP', this)">IP</button>
+        <button onclick="showProtocol('DNS', this)">DNS</button>
+        <button onclick="showProtocol('TLS', this)">TLS</button>
+        <button onclick="showProtocol('MongoDB', this)">MongoDB</button>
+    </div>
+
+    <div class="info" id="protocolInfo">
+        Select a protocol to see how it relates to WebGuard.
+    </div>
+</section>
+
+<!-- SCAN FLOW -->
+<section class="section">
+    <h2>7. WebGuard Scan Communication Flow</h2>
+
+    <p class="muted">
+        Explore the sequence followed during a WebGuard security scan.
+    </p>
+
+    <button onclick="showScanFlow()">Show Scan Flow</button>
+
+    <div id="scanFlow" class="info">
+        Click the button to view the communication sequence.
+    </div>
+</section>
+
+<footer>
+    WebGuard | Computer Networks Module
+</footer>
+
+<script>
+
+const protocolDetails = {
+    HTTP: {
+        title: "HTTP - Hypertext Transfer Protocol",
+        description: "WebGuard uses HTTP requests through Python Requests to communicate with a local web application such as Juice Shop. Flask also serves dashboard pages and API responses over HTTP.",
+        usage: "Scanner-to-target communication and browser-to-Flask communication.",
+        example: "http://127.0.0.1:3000"
+    },
+
+    HTTPS: {
+        title: "HTTPS",
+        description: "HTTPS protects HTTP communication using TLS. WebGuard checks whether the target uses HTTPS and inspects relevant security headers. The current lab target uses HTTP.",
+        usage: "HTTPS security assessment.",
+        example: "https://localhost (subject to local target validation)"
+    },
+
+    TCP: {
+        title: "TCP - Transmission Control Protocol",
+        description: "TCP provides reliable, ordered byte-stream transport for the HTTP connections used in the current WebGuard setup.",
+        usage: "Underlying transport for HTTP and HTTPS connections.",
+        example: "TCP connections to local application services."
+    },
+
+    IP: {
+        title: "IP - Internet Protocol",
+        description: "IP provides addressing and packet routing. WebGuard's target restriction permits loopback addresses such as 127.0.0.1.",
+        usage: "Identifying the local target address.",
+        example: "127.0.0.1"
+    },
+
+    DNS: {
+        title: "DNS - Domain Name System",
+        description: "DNS resolves hostnames into IP addresses. MongoDB Atlas SRV connection strings can use DNS SRV and TXT lookups to discover connection information.",
+        usage: "Hostname resolution and MongoDB Atlas connection discovery.",
+        example: "mongodb+srv:// connection string"
+    },
+
+    TLS: {
+        title: "TLS - Transport Layer Security",
+        description: "TLS protects data exchanged over supported secure connections. HTTPS uses TLS, and MongoDB Atlas connections normally use TLS.",
+        usage: "Protecting remote database communication and HTTPS connections.",
+        example: "MongoDB Atlas secure connection"
+    },
+
+    MongoDB: {
+        title: "MongoDB Wire Protocol",
+        description: "WebGuard uses PyMongo to communicate with MongoDB Atlas. Database operations use the MongoDB wire protocol over a network connection, not HTTP REST requests.",
+        usage: "Saving scan reports and retrieving scan history.",
+        example: "database.py → MongoDB Atlas"
+    }
+};
+
+function showProtocol(name, button) {
+    document.querySelectorAll("#protocolInfo").forEach(() => {});
+
+    document.querySelectorAll(".section button").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    const data = protocolDetails[name];
+    const container = document.getElementById("protocolInfo");
+
+    container.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.textContent = data.title;
+
+    const description = document.createElement("p");
+    description.textContent = data.description;
+
+    const usage = document.createElement("p");
+    usage.textContent = "WebGuard Usage: " + data.usage;
+
+    const example = document.createElement("p");
+    example.textContent = "Example: " + data.example;
+
+    container.append(heading, description, usage, example);
+}
+
+function showScanFlow() {
+    const container = document.getElementById("scanFlow");
+
+    const steps = [
+        "1. User starts the scanner with an authorized localhost target.",
+        "2. FLAT Engine validates URL syntax using Regex and DFA.",
+        "3. Local-only target validation checks the destination.",
+        "4. Python Requests sends an HTTP request to the target.",
+        "5. WebGuard inspects the HTTP response and security headers.",
+        "6. Risk engine calculates the risk score and risk level.",
+        "7. Scan report is saved locally and optionally stored in MongoDB Atlas.",
+        "8. Flask dashboard retrieves saved scan history and displays results."
+    ];
+
+    container.replaceChildren();
+
+    steps.forEach(step => {
+        const item = document.createElement("div");
+        item.className = "flow-step";
+        item.textContent = step;
+        container.appendChild(item);
+    });
+}
+
+</script>
+
+</body>
+</html>

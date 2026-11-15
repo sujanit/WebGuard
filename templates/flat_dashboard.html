@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebGuard | FLAT Dashboard</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+    color: #e5e7eb;
+    padding: 24px;
+}
+
+header { margin-bottom: 25px; }
+header h1 { color: #38bdf8; margin-bottom: 8px; }
+header p, .muted { color: #94a3b8; line-height: 1.6; }
+
+.back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.section {
+    background: #172235;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+
+h2 { color: #38bdf8; margin-bottom: 15px; }
+h3 { color: #7dd3fc; margin-bottom: 10px; }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    background: #263750;
+    border: 1px solid #475569;
+    border-radius: 9px;
+    padding: 17px;
+    line-height: 1.6;
+}
+
+.card p { color: #cbd5e1; margin-top: 8px; }
+
+.info {
+    background: #0f1b2e;
+    border-left: 4px solid #38bdf8;
+    padding: 17px;
+    border-radius: 8px;
+    margin-top: 15px;
+    line-height: 1.7;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background: #0f1b2e;
+    color: white;
+    border: 1px solid #475569;
+    border-radius: 7px;
+}
+
+button {
+    background: #0369a1;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 16px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+button:hover { background: #0284c7; }
+
+.result {
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 7px;
+    background: #263750;
+    overflow-wrap: anywhere;
+}
+
+.state {
+    display: inline-block;
+    background: #263750;
+    border: 1px solid #475569;
+    padding: 12px;
+    margin: 5px;
+    border-radius: 7px;
+}
+
+.active {
+    background: #075985;
+    border-color: #38bdf8;
+}
+
+.flow {
+    border-left: 3px solid #38bdf8;
+    margin: 10px 0 10px 12px;
+    padding: 8px 15px;
+    line-height: 1.6;
+}
+
+code {
+    color: #7dd3fc;
+    overflow-wrap: anywhere;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+}
+
+@media(max-width: 600px) {
+    body { padding: 12px; }
+    .section { padding: 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<a href="/" class="back">← Back to WebGuard</a>
+
+<header>
+    <h1>⚙️ WebGuard - FLAT Dashboard</h1>
+    <p>Formal Languages and Automata Theory concepts implemented in WebGuard.</p>
+</header>
+
+<section class="section">
+    <h2>1. FLAT Implementation Overview</h2>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Regular Expressions</h3>
+            <p>Validates URL syntax and HTTP header names.</p>
+            <p><strong>File:</strong> webguard/flat_engine.py</p>
+        </div>
+
+        <div class="card">
+            <h3>DFA</h3>
+            <p>Recognizes HTTP and HTTPS URL scheme prefixes.</p>
+            <p><strong>File:</strong> webguard/flat_engine.py</p>
+        </div>
+
+        <div class="card">
+            <h3>FSM</h3>
+            <p>Controls the sequence of WebGuard scan operations.</p>
+            <p><strong>File:</strong> webguard/scan_fsm.py</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>2. Regular Expression - URL Validation</h2>
+
+    <p class="muted">Pattern currently implemented in WebGuard:</p>
+
+    <div class="info">
+        <code>^https?://[A-Za-z0-9.\-\[\]:]+(?::\d{1,5})?(?:/.*)?$</code>
+    </div>
+
+    <label for="urlInput">Test URL syntax:</label>
+    <input id="urlInput" value="http://127.0.0.1:3000">
+
+    <button onclick="validateURL()">Validate URL Pattern</button>
+
+    <div class="result" id="urlResult" aria-live="polite">
+        Enter a URL and test the pattern.
+    </div>
+
+    <div class="info">
+        <strong>Important:</strong>
+        Regex checks URL syntax. WebGuard's separate target validation
+        enforces the localhost-only restriction. A regex match does not
+        mean the target is authorized or safe to scan.
+    </div>
+</section>
+
+<section class="section">
+    <h2>3. Regular Expression - Header Validation</h2>
+
+    <p class="muted">Header-name pattern from the FLAT engine:</p>
+
+    <div class="info">
+        <code>^[!#$%&amp;'*+.^_`|~0-9A-Za-z-]+$</code>
+    </div>
+
+    <label for="headerInput">Test HTTP header name:</label>
+    <input id="headerInput" value="Content-Security-Policy">
+
+    <button onclick="validateHeader()">Validate Header</button>
+
+    <div class="result" id="headerResult" aria-live="polite">
+        Enter a header name to test.
+    </div>
+</section>
+
+<section class="section">
+    <h2>4. DFA - HTTP / HTTPS Scheme Recognition</h2>
+
+    <p class="muted">
+        WebGuard's DFA recognizes the HTTP or HTTPS scheme prefix.
+    </p>
+
+    <div class="info">
+        <strong>States:</strong>
+        <div id="dfaStates">
+            <span class="state">q0 - Start</span>
+            <span class="state">q1 - H</span>
+            <span class="state">q2 - HT</span>
+            <span class="state">q3 - HTT</span>
+            <span class="state">q4 - HTTP</span>
+            <span class="state">q5 - HTTPS</span>
+            <span class="state">qF - Accepted</span>
+        </div>
+    </div>
+
+    <label for="dfaInput">Enter URL scheme:</label>
+    <input id="dfaInput" value="https://127.0.0.1:3000">
+
+    <button onclick="runDFA()">Run DFA</button>
+
+    <div class="result" id="dfaResult" aria-live="polite">
+        Waiting for input.
+    </div>
+
+    <div class="info">
+        <strong>Acceptance condition:</strong>
+        The URL must begin with <code>http://</code> or
+        <code>https://</code>. Complete URL syntax and localhost
+        restrictions are checked separately.
+    </div>
+</section>
+
+<section class="section">
+    <h2>5. FSM - WebGuard Scan Lifecycle</h2>
+
+    <p class="muted">
+        These are the states used by the existing scan state machine.
+    </p>
+
+    <div id="fsmStates">
+        <span class="state">INITIALIZED</span>
+        <span class="state">VALIDATING</span>
+        <span class="state">SCANNING</span>
+        <span class="state">ANALYZING</span>
+        <span class="state">REPORTING</span>
+        <span class="state">COMPLETED</span>
+    </div>
+
+    <button onclick="runFSM()">Show Scan Lifecycle</button>
+
+    <div class="info" id="fsmResult" aria-live="polite">
+        Click the button to view the scan lifecycle.
+    </div>
+
+    <div class="info">
+        <strong>Failure handling:</strong>
+        The existing FSM can transition to FAILED when an operation fails.
+    </div>
+</section>
+
+<section class="section">
+    <h2>6. FLAT Integration in WebGuard</h2>
+
+    <div class="flow">
+        <strong>Step 1:</strong> Scanner receives the target URL.
+    </div>
+
+    <div class="flow">
+        <strong>Step 2:</strong> Regex checks URL syntax.
+    </div>
+
+    <div class="flow">
+        <strong>Step 3:</strong> DFA recognizes HTTP or HTTPS scheme.
+    </div>
+
+    <div class="flow">
+        <strong>Step 4:</strong> Localhost-only target validation checks the target.
+    </div>
+
+    <div class="flow">
+        <strong>Step 5:</strong> FSM controls scanning and analysis stages.
+    </div>
+
+    <div class="flow">
+        <strong>Step 6:</strong> WebGuard generates and stores the scan report.
+    </div>
+</section>
+
+<section class="section">
+    <h2>7. Existing Project Files</h2>
+
+    <div class="grid">
+        <div class="card">
+            <h3>flat_engine.py</h3>
+            <p>Regex validation, DFA scheme recognition and FLAT engine metadata.</p>
+        </div>
+
+        <div class="card">
+            <h3>scan_fsm.py</h3>
+            <p>Scan states, allowed transitions and FSM history.</p>
+        </div>
+
+        <div class="card">
+            <h3>scanner.py</h3>
+            <p>Integrates FLAT validation and scan lifecycle into scanning.</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    WebGuard | FLAT Implementation Dashboard
+</footer>
+
+<script>
+
+const urlPattern =
+    /^https?:\/\/[A-Za-z0-9.\-\[\]:]+(?::\d{1,5})?(?:\/.*)?$/;
+
+const headerPattern =
+    /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+
+function showResult(elementId, message) {
+    document.getElementById(elementId).textContent = message;
+}
+
+function validateURL() {
+    const value = document.getElementById("urlInput").value.trim();
+
+    if (!value) {
+        showResult("urlResult", "Please enter a URL.");
+        return;
+    }
+
+    const valid = urlPattern.test(value);
+
+    showResult(
+        "urlResult",
+        valid
+            ? "Regex result: URL syntax MATCHED."
+            : "Regex result: URL syntax NOT MATCHED."
+    );
+}
+
+function validateHeader() {
+    const value = document.getElementById("headerInput").value.trim();
+
+    if (!value) {
+        showResult("headerResult", "Please enter a header name.");
+        return;
+    }
+
+    const valid = headerPattern.test(value);
+
+    showResult(
+        "headerResult",
+        valid
+            ? "Header-name pattern MATCHED."
+            : "Header-name pattern NOT MATCHED."
+    );
+}
+
+function runDFA() {
+    const input = document.getElementById("dfaInput").value.trim();
+    const lower = input.toLowerCase();
+
+    let result;
+
+    if (lower.startsWith("http://")) {
+        result = "Accepted: DFA recognized HTTP scheme.";
+    } else if (lower.startsWith("https://")) {
+        result = "Accepted: DFA recognized HTTPS scheme.";
+    } else {
+        result = "Rejected: Expected http:// or https:// prefix.";
+    }
+
+    showResult("dfaResult", result);
+}
+
+function runFSM() {
+    const states = [
+        ["INITIALIZED", "Scanner is initialized."],
+        ["VALIDATING", "Target syntax and local-only restrictions are checked."],
+        ["SCANNING", "HTTP request is sent and the response is inspected."],
+        ["ANALYZING", "Findings and risk are analyzed."],
+        ["REPORTING", "Scan reports are generated and stored."],
+        ["COMPLETED", "Scan lifecycle completed successfully."]
+    ];
+
+    const container = document.getElementById("fsmResult");
+    container.replaceChildren();
+
+    states.forEach((state, index) => {
+        const item = document.createElement("div");
+        item.className = "flow";
+        item.textContent = state[0] + " — " + state[1];
+        container.appendChild(item);
+    });
+
+    const failure = document.createElement("p");
+    failure.textContent =
+        "If an operation fails, the existing FSM can transition to FAILED.";
+    failure.style.marginTop = "12px";
+
+    container.appendChild(failure);
+}
+
+</script>
+
+</body>
+</html>
