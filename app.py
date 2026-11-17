@@ -1,8 +1,53 @@
 
-from flask import Flask, render_template, jsonify
-from database import connect_database, get_scan_history, close_database
+import os
+import secrets
+
+from flask import (
+    Flask,
+    render_template,
+    jsonify,
+    request,
+    Response
+)
+
+from database import (
+    connect_database,
+    get_scan_history,
+    close_database
+)
 
 app = Flask(__name__)
+
+
+def authenticate():
+    username = os.getenv("WEBGUARD_USERNAME")
+    password = os.getenv("WEBGUARD_PASSWORD")
+
+    if not username or not password:
+        return Response(
+            "Dashboard authentication is not configured.",
+            status=503
+        )
+
+    auth = request.authorization
+
+    if (
+        auth is None
+        or not secrets.compare_digest(auth.username or "", username)
+        or not secrets.compare_digest(auth.password or "", password)
+    ):
+        return Response(
+            "Authentication required.",
+            status=401,
+            headers={
+                "WWW-Authenticate": 'Basic realm="WebGuard Dashboard"'
+            }
+        )
+
+
+@app.before_request
+def protect_dashboard():
+    return authenticate()
 
 
 def load_scans(limit=100):
@@ -36,6 +81,7 @@ def cn_dashboard():
 def flat_dashboard():
     return render_template("flat_dashboard.html")
 
+
 @app.route("/fswd")
 def fswd_dashboard():
     return render_template("fswd_dashboard.html")
@@ -43,8 +89,7 @@ def fswd_dashboard():
 
 @app.route("/api/scans")
 def api_scans():
-    scans = load_scans()
-    return jsonify(scans)
+    return jsonify(load_scans())
 
 
 @app.route("/api/stats")
