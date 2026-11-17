@@ -1,5 +1,15 @@
+# Environment and secrets
 .env
+.env.*
+
+# Python environment
 .venv/
+venv/
 __pycache__/
-.pytest_cache/
 *.pyc
+
+# Runtime logs
+logs/
+
+# IDE settings
+.vscode/

@@ -39,7 +39,7 @@ def inspect_headers(headers):
                 "evidence": f"Response did not include {header}.",
                 "remediation": details["description"]
             })
-
+  
     return findings
 
 
