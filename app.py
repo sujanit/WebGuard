@@ -21,8 +21,7 @@ from webguard.config import (
 from database import (
     connect_database,
     get_scan_history,
-    save_scan_result,
-    close_database
+    save_scan_result
 )
 
 app = Flask(__name__)
@@ -64,20 +63,13 @@ def is_render_dashboard_request():
 
 
 def load_scans(limit=100):
-    connected = False
-
     try:
         connect_database()
-        connected = True
         return get_scan_history(limit=limit)
 
     except Exception as error:
         print("Database error:", error)
         return []
-
-    finally:
-        if connected:
-            close_database()
 
 
 @app.route("/")
@@ -159,8 +151,6 @@ def api_scan():
         save_scan_result(report)
     except (ValueError, PyMongoError):
         history_saved = False
-    finally:
-        close_database()
 
     return jsonify({
         "report": report,

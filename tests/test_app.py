@@ -96,7 +96,6 @@ def test_local_scan_saves_result_to_history(monkeypatch):
     monkeypatch.setattr("app.scan_target", scan_target)
     monkeypatch.setattr("app.connect_database", lambda: None)
     monkeypatch.setattr("app.save_scan_result", saved_reports.append)
-    monkeypatch.setattr("app.close_database", lambda: None)
 
     response = app.test_client().post(
         "/api/scan",
@@ -129,7 +128,6 @@ def test_render_scan_is_limited_to_allowlisted_origin(monkeypatch):
     monkeypatch.setattr("app.scan_target", scan_target)
     monkeypatch.setattr("app.connect_database", lambda: None)
     monkeypatch.setattr("app.save_scan_result", lambda result: None)
-    monkeypatch.setattr("app.close_database", lambda: None)
 
     response = app.test_client().post(
         "/api/scan",
@@ -155,7 +153,6 @@ def test_scan_returns_report_when_history_save_fails(monkeypatch):
     monkeypatch.setattr("app.scan_target", lambda target, **kwargs: report)
     monkeypatch.setattr("app.connect_database", lambda: None)
     monkeypatch.setattr("app.save_scan_result", fail_to_save)
-    monkeypatch.setattr("app.close_database", lambda: None)
 
     response = app.test_client().post(
         "/api/scan",

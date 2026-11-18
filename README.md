@@ -61,6 +61,27 @@ Windows PowerShell:
 pip install -r requirements.txt
 ```
 
+## MongoDB Atlas
+
+1. Create an Atlas cluster and a database user.
+2. In **Network Access**, allow your current IP address.
+3. In the cluster's **Connect** dialog, choose **Drivers** and copy the Python connection string.
+4. Copy `.env.example` to `.env`, then set `MONGODB_URI` to that connection string and replace its username, password, and cluster host. URL-encode special characters in the password. Keep `.env` private; it is ignored by Git.
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+5. Optionally change `MONGODB_DATABASE` (defaults to `webguard`).
+
+Install dependencies, then verify the connection from the project directory:
+
+```powershell
+python -c "from database import connect_database, close_database; connect_database(); close_database()"
+```
+
+The Flask dashboard reuses its MongoClient connection pool while running and closes it when the process exits.
+
 ## Usage
 
 Start the local OWASP Juice Shop testing environment:
