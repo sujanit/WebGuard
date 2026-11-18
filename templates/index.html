@@ -55,6 +55,45 @@
         .subject-link:hover {
             background: #0284c7;
         }
+
+        .scan-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .scan-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 14px;
+            color: #f8fafc;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 7px;
+        }
+
+        .scan-form input:focus {
+            outline: 2px solid #38bdf8;
+            outline-offset: 2px;
+        }
+
+        .scan-form button:disabled {
+            background: #334155;
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .scan-note {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .scan-form {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 
@@ -123,6 +162,27 @@
         <h3>Total Findings</h3>
         <h2 id="totalFindings">0</h2>
     </div>
+</section>
+
+<!-- SCAN ENTRY PLACEHOLDER -->
+<section class="section scan-entry">
+    <h2>Start a Scan</h2>
+    <label for="scanTarget">Target URL</label>
+    <div class="scan-form">
+        <input
+            id="scanTarget"
+            type="url"
+            placeholder="http://localhost:3000"
+            autocomplete="url"
+            aria-describedby="scanAvailability"
+        >
+        <button type="button" disabled>Scan target</button>
+    </div>
+    <p class="scan-note" id="scanAvailability">
+        Scanning is not available from the hosted dashboard yet. WebGuard only
+        scans localhost and loopback targets, which refer to the server here,
+        not your device.
+    </p>
 </section>
 
 <!-- SCAN HISTORY -->
