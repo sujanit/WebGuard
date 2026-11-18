@@ -79,6 +79,126 @@ button:hover, .back-button:hover {
     margin-bottom: 20px;
 }
 
+.availability-section > p {
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+.availability-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.availability-count {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.availability-count strong {
+    color: #f8fafc;
+    font-size: 24px;
+}
+
+.availability-count span {
+    color: #94a3b8;
+}
+
+.service-state {
+    display: inline-block;
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.state-healthy, .event-restored {
+    color: #4ade80;
+    background: #052e16;
+}
+
+.state-slow, .event-recovery_started {
+    color: #facc15;
+    background: #422006;
+}
+
+.state-unavailable, .event-failure {
+    color: #f87171;
+    background: #451a1a;
+}
+
+.state-recovering {
+    color: #7dd3fc;
+    background: #082f49;
+}
+
+.state-restored {
+    color: #4ade80;
+    background: #052e16;
+}
+
+.state-unknown {
+    color: #cbd5e1;
+    background: #334155;
+}
+
+.availability-alert {
+    border-left: 4px solid #ef4444;
+    background: #451a1a;
+    color: #fecaca !important;
+    padding: 12px 15px;
+}
+
+.availability-subheading {
+    color: #38bdf8;
+    margin: 24px 0 12px;
+}
+
+.availability-events {
+    display: grid;
+    gap: 10px;
+}
+
+.availability-event {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-left: 4px solid #64748b;
+    border-radius: 7px;
+    padding: 12px 15px;
+}
+
+.availability-event p {
+    color: #94a3b8;
+    margin-top: 6px;
+}
+
+.availability-event.event-failure {
+    border-left-color: #ef4444;
+}
+
+.availability-event.event-recovery_started {
+    border-left-color: #eab308;
+}
+
+.availability-event.event-restored {
+    border-left-color: #22c55e;
+}
+
+.service-history {
+    margin-top: 24px;
+}
+
+.service-history h3 {
+    color: #38bdf8;
+    margin-bottom: 14px;
+}
+
 .table-container {
     overflow-x: auto;
 }

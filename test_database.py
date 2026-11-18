@@ -4,22 +4,28 @@ from database import (
     close_database
 )
 
-try:
-    connect_database()
 
-    scans = get_scan_history()
+def main():
+    try:
+        connect_database()
 
-    print("\nWEBGUARD MONGODB SCAN HISTORY")
-    print("=" * 40)
+        scans = get_scan_history()
 
-    for scan in scans:
-        print("\nTarget:", scan.get("target"))
-        print("Risk Score:", scan.get("risk_score"))
-        print("Risk Level:", scan.get("risk_level"))
-        print("Findings:", scan.get("findings_count"))
-        print("Scan Status:", scan.get("scan_status"))
+        print("\nWEBGUARD MONGODB SCAN HISTORY")
+        print("=" * 40)
 
-    print("\nTotal scans:", len(scans))
+        for scan in scans:
+            print("\nTarget:", scan.get("target"))
+            print("Risk Score:", scan.get("risk_score"))
+            print("Risk Level:", scan.get("risk_level"))
+            print("Findings:", scan.get("findings_count"))
+            print("Scan Status:", scan.get("scan_status"))
 
-finally:
-    close_database()
+        print("\nTotal scans:", len(scans))
+
+    finally:
+        close_database()
+
+
+if __name__ == "__main__":
+    main()

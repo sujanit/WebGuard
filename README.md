@@ -1,10 +1,10 @@
 # WebGuard v1.1.0
 
-**A Python-based local web application security scanner with FLAT Engine and Finite State Machine integration.**
+**A Python web application security scanner and service availability monitor with finite-state-machine integration.**
 
 ## Overview
 
-WebGuard is a Python-based security scanner designed to identify common web application security misconfigurations in locally hosted applications.
+WebGuard scans web applications for common security misconfigurations and periodically checks configured public service endpoints for availability.
 
 It analyzes HTTP responses, identifies missing security headers, evaluates cookie security and generates risk assessments with remediation suggestions.
 
@@ -17,6 +17,9 @@ It analyzes HTTP responses, identifies missing security headers, evaluates cooki
 - Risk scoring and severity classification
 - JSON, CSV and HTML report generation
 - Scan history tracking
+- Periodic HTTP service availability monitoring with response-time measurements
+- Healthy, Slow, Unavailable, Recovering, and Restored service states
+- Availability change notifications and per-service history
 - FLAT Engine integration
 - Regular-expression-based URL and header validation
 - DFA-based HTTP/HTTPS scheme validation
@@ -82,6 +85,20 @@ python -c "from database import connect_database, close_database; connect_databa
 
 The Flask dashboard reuses its MongoClient connection pool while running and closes it when the process exits.
 
+## Service Availability Monitoring
+
+Set `MONITORED_SERVICES_JSON` to a JSON array of named health-check URLs. Configure this variable in Render's environment settings for the deployed app, or in your local `.env` file:
+
+```text
+MONITORED_SERVICES_JSON=[{"name":"Public API","url":"https://api.example.com/health"},{"name":"Status Page","url":"https://status.example.com/"}]
+```
+
+Only configure public HTTP(S) endpoints that you own or are authorized to monitor. The monitor rejects private/reserved destinations, URL credentials, query strings, and fragments, and does not follow redirects. Keep credentials out of health-check URLs.
+
+Checks start when the app process starts and repeat every 60 seconds. Each request has a 5-second timeout; successful responses taking more than 1 second are classified as **Slow**. Connection failures and HTTP errors (status 400 or above) are **Unavailable**. After an outage, one successful check is **Recovering** and two consecutive successful checks mark the service **Restored**; the next check classifies it as **Healthy** or **Slow**. A maximum of 20 services can be configured.
+
+The dashboard refreshes its service state and event notifications every 15 seconds. Use **View** to open recent per-service check history. Check history is stored in MongoDB Atlas and expires after 30 days. With no configured services, the dashboard displays setup instructions instead of performing checks.
+
 ## Usage
 
 Start the local OWASP Juice Shop testing environment:
@@ -118,7 +135,7 @@ Run the automated test suite:
 python -m pytest -v
 ```
 
-Latest recorded result: **71 tests passed.**
+Latest recorded result: **87 tests passed.**
 
 ## Security Scope
 

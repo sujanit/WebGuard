@@ -102,7 +102,7 @@
 <header>
     <div>
         <h1>🛡️ WebGuard</h1>
-        <p>Web Application Security Monitoring Dashboard</p>
+        <p>Web Application Security and Service Availability Dashboard</p>
     </div>
 
     <button onclick="loadDashboard()">↻ Refresh Dashboard</button>
@@ -161,6 +161,53 @@
     <div class="card">
         <h3>Total Findings</h3>
         <h2 id="totalFindings">0</h2>
+    </div>
+</section>
+
+<section class="section availability-section">
+    <h2>Service Availability</h2>
+    <p id="availabilityMessage" role="status">Loading monitored services...</p>
+    <p id="availabilityAlert" class="availability-alert" role="alert" hidden></p>
+    <div id="availabilitySummary" class="availability-summary"></div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Endpoint</th>
+                    <th>State</th>
+                    <th>HTTP</th>
+                    <th>Response time</th>
+                    <th>Last checked</th>
+                    <th>Recovery attempts</th>
+                    <th>History</th>
+                </tr>
+            </thead>
+            <tbody id="availabilityTable"></tbody>
+        </table>
+    </div>
+
+    <h3 class="availability-subheading">Recent changes and notifications</h3>
+    <div id="availabilityEvents" class="availability-events"></div>
+
+    <div id="serviceHistory" class="service-history" hidden>
+        <h3 id="serviceHistoryTitle"></h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Checked</th>
+                        <th>State</th>
+                        <th>HTTP</th>
+                        <th>Response time</th>
+                        <th>Recovery attempts</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceHistoryTable"></tbody>
+            </table>
+        </div>
     </div>
 </section>
 
@@ -389,7 +436,210 @@ function displayFindings(scan) {
     });
 }
 
+function addTableCell(row, value) {
+    const cell = document.createElement("td");
+    cell.textContent = value;
+    row.appendChild(cell);
+    return cell;
+}
+
+function formatCheckedAt(value) {
+    if (!value) {
+        return "Not checked yet";
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
+}
+
+async function loadAvailability() {
+    const message = document.getElementById("availabilityMessage");
+    const table = document.getElementById("availabilityTable");
+    const summary = document.getElementById("availabilitySummary");
+    const eventsContainer = document.getElementById("availabilityEvents");
+    const alert = document.getElementById("availabilityAlert");
+
+    try {
+        const response = await fetch("/api/availability", {cache: "no-store"});
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to load availability data.");
+        }
+
+        const services = Array.isArray(data.services) ? data.services : [];
+        table.replaceChildren();
+        summary.replaceChildren();
+        eventsContainer.replaceChildren();
+        alert.hidden = true;
+
+        if (services.length === 0) {
+            message.textContent = data.message ||
+                "No services are configured for monitoring.";
+            return;
+        }
+
+        message.textContent =
+            "Checks run every 60 seconds. Dashboard data refreshes automatically.";
+
+        const counts = {
+            Healthy: 0,
+            Slow: 0,
+            Unavailable: 0,
+            Recovering: 0,
+            Restored: 0
+        };
+
+        services.forEach(service => {
+            if (Object.prototype.hasOwnProperty.call(counts, service.state)) {
+                counts[service.state] += 1;
+            }
+
+            const row = document.createElement("tr");
+            addTableCell(row, service.name);
+            addTableCell(row, service.url);
+
+            const stateCell = document.createElement("td");
+            const state = document.createElement("span");
+            state.className = "service-state state-" +
+                String(service.state || "Unknown").toLowerCase();
+            state.textContent = service.state || "Unknown";
+            stateCell.appendChild(state);
+            row.appendChild(stateCell);
+
+            addTableCell(
+                row,
+                service.status_code === null || service.status_code === undefined
+                    ? "—"
+                    : String(service.status_code)
+            );
+            addTableCell(
+                row,
+                service.response_time_ms === null ||
+                    service.response_time_ms === undefined
+                    ? "—"
+                    : `${service.response_time_ms} ms`
+            );
+            addTableCell(row, formatCheckedAt(service.last_checked_at));
+            addTableCell(row, String(service.recovery_attempts || 0));
+
+            const historyCell = document.createElement("td");
+            const historyButton = document.createElement("button");
+            historyButton.type = "button";
+            historyButton.dataset.serviceId = service.service_id;
+            historyButton.dataset.serviceName = service.name;
+            historyButton.textContent = "View";
+            historyCell.appendChild(historyButton);
+            row.appendChild(historyCell);
+            table.appendChild(row);
+        });
+
+        Object.entries(counts).forEach(([stateName, count]) => {
+            const card = document.createElement("div");
+            card.className = "availability-count";
+            const value = document.createElement("strong");
+            value.textContent = String(count);
+            const label = document.createElement("span");
+            label.textContent = stateName;
+            card.append(value, label);
+            summary.appendChild(card);
+        });
+
+        const unavailable = services
+            .filter(service => service.state === "Unavailable")
+            .map(service => service.error
+                ? `${service.name} (${service.error})`
+                : service.name);
+        if (unavailable.length > 0) {
+            alert.textContent = "Failure notification: " +
+                unavailable.join(", ") + " unavailable.";
+            alert.hidden = false;
+        }
+
+        const events = Array.isArray(data.events) ? data.events : [];
+        if (events.length === 0) {
+            eventsContainer.textContent = "No availability changes recorded yet.";
+        } else {
+            events.forEach(event => {
+                const item = document.createElement("article");
+                item.className = "availability-event event-" + event.type;
+                const title = document.createElement("strong");
+                title.textContent = `${event.name}: ${event.from_state} → ${event.to_state}`;
+                const detail = document.createElement("p");
+                detail.textContent =
+                    `${event.type.replace(/_/g, " ")} · ` +
+                    `recovery attempts: ${event.recovery_attempts || 0} · ` +
+                    `${event.error || (event.status_code ? "HTTP " + event.status_code : "No HTTP response")} · ` +
+                    formatCheckedAt(event.created_at);
+                item.append(title, detail);
+                eventsContainer.appendChild(item);
+            });
+        }
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function loadServiceHistory(serviceId, serviceName) {
+    const panel = document.getElementById("serviceHistory");
+    const title = document.getElementById("serviceHistoryTitle");
+    const table = document.getElementById("serviceHistoryTable");
+    panel.hidden = false;
+    title.textContent = `${serviceName} — recent check history`;
+    table.replaceChildren();
+
+    try {
+        const response = await fetch(
+            "/api/availability/" + encodeURIComponent(serviceId) + "/history",
+            {cache: "no-store"}
+        );
+        const history = await response.json();
+        if (!response.ok) {
+            throw new Error(history.error || "Unable to load service history.");
+        }
+
+        if (history.length === 0) {
+            addTableCell(table.insertRow(), "No checks recorded yet.");
+            return;
+        }
+
+        history.forEach(check => {
+            const row = table.insertRow();
+            addTableCell(row, formatCheckedAt(check.checked_at));
+            addTableCell(row, check.state);
+            addTableCell(
+                row,
+                check.status_code === null ? "—" : String(check.status_code)
+            );
+            addTableCell(
+                row,
+                check.response_time_ms === null
+                    ? "—"
+                    : `${check.response_time_ms} ms`
+            );
+            addTableCell(row, String(check.recovery_attempts || 0));
+            addTableCell(row, check.error || "—");
+        });
+    } catch (error) {
+        addTableCell(table.insertRow(), error.message);
+    }
+}
+
+document.getElementById("availabilityTable").addEventListener("click", event => {
+    const button = event.target instanceof Element
+        ? event.target.closest("button[data-service-id]")
+        : null;
+    if (button) {
+        loadServiceHistory(
+            button.dataset.serviceId,
+            button.dataset.serviceName
+        );
+    }
+});
+
 loadDashboard();
+loadAvailability();
+setInterval(loadAvailability, 15000);
 
 document.getElementById("scanForm").addEventListener("submit", async event => {
     event.preventDefault();

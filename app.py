@@ -21,10 +21,19 @@ from webguard.config import (
 from database import (
     connect_database,
     get_scan_history,
+    get_availability_dashboard,
+    get_service_history,
     save_scan_result
+)
+from webguard.availability_monitor import (
+    AvailabilityMonitor,
+    load_monitored_services
 )
 
 app = Flask(__name__)
+MONITORED_SERVICES = load_monitored_services()
+availability_monitor = AvailabilityMonitor(MONITORED_SERVICES)
+availability_monitor.start()
 
 
 def _request_host():
@@ -190,6 +199,41 @@ def api_stats():
         "total_findings": total_findings,
         "latest_scan": latest_scan
     })
+
+
+@app.route("/api/availability")
+def api_availability():
+    if not MONITORED_SERVICES:
+        return jsonify({
+            "services": [],
+            "events": [],
+            "message": "Configure MONITORED_SERVICES_JSON to start monitoring."
+        })
+
+    try:
+        return jsonify(get_availability_dashboard(MONITORED_SERVICES))
+    except (ValueError, PyMongoError):
+        app.logger.exception("Unable to load availability data.")
+        return jsonify({
+            "error": "Availability data is temporarily unavailable."
+        }), 503
+
+
+@app.route("/api/availability/<service_id>/history")
+def api_availability_history(service_id):
+    if not any(
+        service["service_id"] == service_id
+        for service in MONITORED_SERVICES
+    ):
+        return jsonify({"error": "Monitored service not found."}), 404
+
+    try:
+        return jsonify(get_service_history(service_id))
+    except (ValueError, PyMongoError):
+        app.logger.exception("Unable to load service history.")
+        return jsonify({
+            "error": "Service history is temporarily unavailable."
+        }), 503
 
 
 @app.route("/scan/<scan_id>")

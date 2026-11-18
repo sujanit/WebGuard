@@ -163,3 +163,43 @@ def test_scan_returns_report_when_history_save_fails(monkeypatch):
     assert response.json["report"] == report
     assert response.json["history_saved"] is False
     assert "Check MongoDB credentials and configuration." in response.json["message"]
+
+
+def test_availability_endpoint_explains_when_no_services_are_configured(monkeypatch):
+    monkeypatch.setattr("app.MONITORED_SERVICES", [])
+
+    response = app.test_client().get("/api/availability")
+
+    assert response.status_code == 200
+    assert response.json["services"] == []
+    assert "MONITORED_SERVICES_JSON" in response.json["message"]
+
+
+def test_availability_endpoint_returns_service_status(monkeypatch):
+    services = [{
+        "service_id": "service-1",
+        "name": "API",
+        "url": "https://api.example.com/health"
+    }]
+    dashboard = {
+        "services": [{**services[0], "state": "Healthy"}],
+        "events": []
+    }
+
+    monkeypatch.setattr("app.MONITORED_SERVICES", services)
+    monkeypatch.setattr(
+        "app.get_availability_dashboard",
+        lambda configured_services: dashboard
+    )
+
+    response = app.test_client().get("/api/availability")
+
+    assert response.status_code == 200
+    assert response.json == dashboard
+
+
+def test_availability_history_rejects_unconfigured_service():
+    response = app.test_client().get("/api/availability/not-configured/history")
+
+    assert response.status_code == 404
+    assert response.json["error"] == "Monitored service not found."
