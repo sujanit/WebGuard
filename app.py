@@ -168,7 +168,7 @@ def api_scan():
         "message": (
             "Scan completed and added to history."
             if history_saved
-            else "Scan completed, but could not be saved to history. Check the local database configuration."
+            else "Scan completed, but could not be saved to history. Check MongoDB credentials and configuration."
         )
     })
 

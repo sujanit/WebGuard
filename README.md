@@ -97,7 +97,7 @@ Run the automated test suite:
 python -m pytest -v
 ```
 
-Latest recorded result: **70 tests passed.**
+Latest recorded result: **71 tests passed.**
 
 ## Security Scope
 

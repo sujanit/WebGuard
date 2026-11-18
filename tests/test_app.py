@@ -140,3 +140,29 @@ def test_render_scan_is_limited_to_allowlisted_origin(monkeypatch):
 
     assert response.status_code == 200
     assert response.json["report"] == report
+
+
+def test_scan_returns_report_when_history_save_fails(monkeypatch):
+    report = {
+        "target": "http://127.0.0.1:3000",
+        "findings_count": 1,
+        "risk_level": "Medium"
+    }
+
+    def fail_to_save(result):
+        raise ValueError("database unavailable")
+
+    monkeypatch.setattr("app.scan_target", lambda target, **kwargs: report)
+    monkeypatch.setattr("app.connect_database", lambda: None)
+    monkeypatch.setattr("app.save_scan_result", fail_to_save)
+    monkeypatch.setattr("app.close_database", lambda: None)
+
+    response = app.test_client().post(
+        "/api/scan",
+        json={"target": report["target"]}
+    )
+
+    assert response.status_code == 200
+    assert response.json["report"] == report
+    assert response.json["history_saved"] is False
+    assert "Check MongoDB credentials and configuration." in response.json["message"]
