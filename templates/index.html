@@ -172,7 +172,8 @@
         <input
             id="scanTarget"
             type="url"
-            placeholder="http://localhost:3000"
+            value="http://127.0.0.1:3000/#/"
+            placeholder="http://127.0.0.1:3000/#/"
             autocomplete="url"
             required
             aria-describedby="scanAvailability"
@@ -415,7 +416,7 @@ document.getElementById("scanForm").addEventListener("submit", async event => {
             `risk ${result.report.risk_level}.`;
 
         if (result.history_saved) {
-            loadDashboard();
+            await loadDashboard();
         }
     } catch (error) {
         scanMessage.textContent = error.message;

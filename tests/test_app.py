@@ -1,6 +1,7 @@
 import pytest
 
 from app import app
+from webguard.scanner import validate_target
 
 
 @pytest.mark.parametrize("path", ["/", "/cn", "/flat", "/fswd"])
@@ -19,7 +20,8 @@ def test_home_page_enables_scanning_for_local_requests():
 
     assert response.status_code == 200
     assert b'id="scanTarget"' in response.data
-    assert b'placeholder="http://localhost:3000"' in response.data
+    assert b'value="http://127.0.0.1:3000/#/"' in response.data
+    assert b'placeholder="http://127.0.0.1:3000/#/"' in response.data
     assert b'<button type="submit">Scan target</button>' in response.data
     assert b"Scans are limited to localhost and loopback targets." in response.data
 
@@ -59,23 +61,30 @@ def test_scan_endpoint_rejects_non_loopback_targets():
 
 def test_local_scan_saves_result_to_history(monkeypatch):
     report = {
-        "target": "http://localhost:3000",
+        "target": "http://127.0.0.1:3000/",
         "findings_count": 0,
         "risk_level": "Low"
     }
     saved_reports = []
+    scanned_targets = []
 
-    monkeypatch.setattr("app.scan_target", lambda target: report)
+    def scan_target(target):
+        validate_target(target)
+        scanned_targets.append(target)
+        return report
+
+    monkeypatch.setattr("app.scan_target", scan_target)
     monkeypatch.setattr("app.connect_database", lambda: None)
     monkeypatch.setattr("app.save_scan_result", saved_reports.append)
     monkeypatch.setattr("app.close_database", lambda: None)
 
     response = app.test_client().post(
         "/api/scan",
-        json={"target": report["target"]}
+        json={"target": "http://127.0.0.1:3000/#/"}
     )
 
     assert response.status_code == 200
     assert response.json["report"] == report
     assert response.json["history_saved"] is True
+    assert scanned_targets == [report["target"]]
     assert saved_reports == [report]

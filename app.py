@@ -1,6 +1,6 @@
 
 import ipaddress
-from urllib.parse import urlsplit
+from urllib.parse import urldefrag, urlsplit
 
 import requests
 from flask import (
@@ -110,6 +110,8 @@ def api_scan():
 
     if len(target) > 2048:
         return jsonify({"error": "Target URL is too long."}), 400
+
+    target, _ = urldefrag(target)
 
     try:
         report = scan_target(target)
