@@ -164,25 +164,31 @@
     </div>
 </section>
 
-<!-- SCAN ENTRY PLACEHOLDER -->
+<!-- LOCAL SCAN -->
 <section class="section scan-entry">
     <h2>Start a Scan</h2>
     <label for="scanTarget">Target URL</label>
-    <div class="scan-form">
+    <form class="scan-form" id="scanForm">
         <input
             id="scanTarget"
             type="url"
             placeholder="http://localhost:3000"
             autocomplete="url"
+            required
             aria-describedby="scanAvailability"
+            {% if not scan_enabled %}disabled{% endif %}
         >
-        <button type="button" disabled>Scan target</button>
-    </div>
+        <button type="submit"{% if not scan_enabled %} disabled{% endif %}>Scan target</button>
+    </form>
     <p class="scan-note" id="scanAvailability">
-        Scanning is not available from the hosted dashboard yet. WebGuard only
-        scans localhost and loopback targets, which refer to the server here,
-        not your device.
+        {% if scan_enabled %}
+            Scans are limited to localhost and loopback targets.
+        {% else %}
+            Scanning is available only when WebGuard runs locally. This hosted
+            dashboard cannot scan your device.
+        {% endif %}
     </p>
+    <p class="scan-note" id="scanMessage" role="status" aria-live="polite"></p>
 </section>
 
 <!-- SCAN HISTORY -->
@@ -381,6 +387,42 @@ function displayFindings(scan) {
 }
 
 loadDashboard();
+
+document.getElementById("scanForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const targetInput = document.getElementById("scanTarget");
+    const scanMessage = document.getElementById("scanMessage");
+    const scanButton = event.currentTarget.querySelector("button");
+
+    scanButton.disabled = true;
+    scanMessage.textContent = "Scanning local target...";
+
+    try {
+        const response = await fetch("/api/scan", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({target: targetInput.value.trim()})
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Unable to scan this target.");
+        }
+
+        scanMessage.textContent =
+            `${result.message} ${result.report.findings_count} findings; ` +
+            `risk ${result.report.risk_level}.`;
+
+        if (result.history_saved) {
+            loadDashboard();
+        }
+    } catch (error) {
+        scanMessage.textContent = error.message;
+    } finally {
+        scanButton.disabled = false;
+    }
+});
 
 </script>
 

@@ -1,17 +1,52 @@
 
+import ipaddress
+from urllib.parse import urlsplit
+
+import requests
 from flask import (
     Flask,
     render_template,
-    jsonify
+    jsonify,
+    request
 )
+from pymongo.errors import PyMongoError
+
+from webguard.scanner import scan_target
 
 from database import (
     connect_database,
     get_scan_history,
+    save_scan_result,
     close_database
 )
 
 app = Flask(__name__)
+
+
+def _is_loopback_address(address):
+    try:
+        parsed_address = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+
+    if isinstance(parsed_address, ipaddress.IPv6Address):
+        parsed_address = parsed_address.ipv4_mapped or parsed_address
+
+    return parsed_address.is_loopback
+
+
+def is_local_dashboard_request():
+    try:
+        host = urlsplit(f"//{request.host}").hostname
+    except ValueError:
+        return False
+
+    return (
+        host is not None
+        and (host.lower() == "localhost" or _is_loopback_address(host))
+        and _is_loopback_address(request.remote_addr or "")
+    )
+
 
 def load_scans(limit=100):
     connected = False
@@ -32,7 +67,10 @@ def load_scans(limit=100):
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        scan_enabled=is_local_dashboard_request()
+    )
 
 
 @app.route("/cn")
@@ -53,6 +91,52 @@ def fswd_dashboard():
 @app.route("/api/scans")
 def api_scans():
     return jsonify(load_scans())
+
+
+@app.route("/api/scan", methods=["POST"])
+def api_scan():
+    if not is_local_dashboard_request():
+        return jsonify({
+            "error": "Scanning is only available from a local WebGuard instance."
+        }), 403
+
+    data = request.get_json(silent=True)
+    target = data.get("target") if isinstance(data, dict) else None
+
+    if not isinstance(target, str) or not target.strip():
+        return jsonify({"error": "Enter a target URL to scan."}), 400
+
+    target = target.strip()
+
+    if len(target) > 2048:
+        return jsonify({"error": "Target URL is too long."}), 400
+
+    try:
+        report = scan_target(target)
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except requests.RequestException:
+        return jsonify({"error": "The local target could not be reached."}), 502
+
+    history_saved = True
+
+    try:
+        connect_database()
+        save_scan_result(report)
+    except (ValueError, PyMongoError):
+        history_saved = False
+    finally:
+        close_database()
+
+    return jsonify({
+        "report": report,
+        "history_saved": history_saved,
+        "message": (
+            "Scan completed and added to history."
+            if history_saved
+            else "Scan completed, but could not be saved to history. Check the local database configuration."
+        )
+    })
 
 
 @app.route("/api/stats")
