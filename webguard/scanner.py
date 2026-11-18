@@ -28,7 +28,26 @@ from webguard.scan_fsm import ScanStateMachine
 flat_engine = FlatEngine()
 
 
-def validate_target(url):
+def _normalized_origin(parsed):
+    try:
+        port = parsed.port
+    except ValueError:
+        return None
+
+    scheme = parsed.scheme.lower()
+    hostname = parsed.hostname.lower()
+
+    if ":" in hostname and not hostname.startswith("["):
+        hostname = f"[{hostname}]"
+
+    default_port = 443 if scheme == "https" else 80
+    if port is not None and port != default_port:
+        return f"{scheme}://{hostname}:{port}"
+
+    return f"{scheme}://{hostname}"
+
+
+def validate_target(url, allowed_origins=(), allow_loopback=True):
 
     # Regular Expression validation
     if not flat_engine.validate_url_pattern(url):
@@ -66,9 +85,12 @@ def validate_target(url):
     except ValueError:
         is_loopback = False
 
-    if not (is_localhost or is_loopback):
+    is_allowed_loopback = allow_loopback and (is_localhost or is_loopback)
+    is_allowed_origin = _normalized_origin(parsed) in allowed_origins
+
+    if not (is_allowed_loopback or is_allowed_origin):
         raise ValueError(
-            "Only localhost and loopback targets are allowed."
+            "Target must be localhost, loopback, or an explicitly allowed origin."
         )
 
     # Only allow base URLs
@@ -84,7 +106,7 @@ def validate_target(url):
     return True
 
 
-def scan_target(url):
+def scan_target(url, allowed_origins=(), allow_loopback=True):
 
     # Initialize FSM
     fsm = ScanStateMachine()
@@ -95,7 +117,11 @@ def scan_target(url):
 
         # State 1: Validate target
         fsm.transition("VALIDATING")
-        validate_target(url)
+        validate_target(
+            url,
+            allowed_origins=allowed_origins,
+            allow_loopback=allow_loopback
+        )
 
         # State 2: Start scanning
         fsm.transition("SCANNING")

@@ -172,8 +172,8 @@
         <input
             id="scanTarget"
             type="url"
-            value="http://127.0.0.1:3000/#/"
-            placeholder="http://127.0.0.1:3000/#/"
+            value="{{ scan_target_default }}"
+            placeholder="{{ scan_target_default }}"
             autocomplete="url"
             required
             aria-describedby="scanAvailability"
@@ -182,7 +182,9 @@
         <button type="submit"{% if not scan_enabled %} disabled{% endif %}>Scan target</button>
     </form>
     <p class="scan-note" id="scanAvailability">
-        {% if scan_enabled %}
+        {% if render_scan_enabled %}
+            Render scans are restricted to {{ scan_target_default }}.
+        {% elif scan_enabled %}
             Scans are limited to localhost and loopback targets.
         {% else %}
             Scanning is available only when WebGuard runs locally. This hosted
@@ -414,6 +416,8 @@ document.getElementById("scanForm").addEventListener("submit", async event => {
         scanMessage.textContent =
             `${result.message} ${result.report.findings_count} findings; ` +
             `risk ${result.report.risk_level}.`;
+
+        displayFindings(result.report);
 
         if (result.history_saved) {
             await loadDashboard();

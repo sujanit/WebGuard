@@ -13,6 +13,11 @@ from pymongo.errors import PyMongoError
 
 from webguard.scanner import scan_target
 
+from webguard.config import (
+    ALLOWED_SCAN_ORIGINS,
+    RENDER_DASHBOARD_HOST
+)
+
 from database import (
     connect_database,
     get_scan_history,
@@ -21,6 +26,15 @@ from database import (
 )
 
 app = Flask(__name__)
+
+
+def _request_host():
+    try:
+        host = urlsplit(f"//{request.host}").hostname
+    except ValueError:
+        return None
+
+    return host.lower() if host else None
 
 
 def _is_loopback_address(address):
@@ -36,16 +50,17 @@ def _is_loopback_address(address):
 
 
 def is_local_dashboard_request():
-    try:
-        host = urlsplit(f"//{request.host}").hostname
-    except ValueError:
-        return False
+    host = _request_host()
 
     return (
         host is not None
         and (host.lower() == "localhost" or _is_loopback_address(host))
         and _is_loopback_address(request.remote_addr or "")
     )
+
+
+def is_render_dashboard_request():
+    return _request_host() == RENDER_DASHBOARD_HOST
 
 
 def load_scans(limit=100):
@@ -67,9 +82,19 @@ def load_scans(limit=100):
 
 @app.route("/")
 def home():
+    local_request = is_local_dashboard_request()
+    render_request = is_render_dashboard_request() and bool(ALLOWED_SCAN_ORIGINS)
+    scan_target_default = (
+        ALLOWED_SCAN_ORIGINS[0] + "/"
+        if render_request
+        else "http://127.0.0.1:3000/#/"
+    )
+
     return render_template(
         "index.html",
-        scan_enabled=is_local_dashboard_request()
+        scan_enabled=local_request or render_request,
+        render_scan_enabled=render_request,
+        scan_target_default=scan_target_default
     )
 
 
@@ -95,7 +120,10 @@ def api_scans():
 
 @app.route("/api/scan", methods=["POST"])
 def api_scan():
-    if not is_local_dashboard_request():
+    local_request = is_local_dashboard_request()
+    render_request = is_render_dashboard_request()
+
+    if not (local_request or render_request):
         return jsonify({
             "error": "Scanning is only available from a local WebGuard instance."
         }), 403
@@ -114,11 +142,15 @@ def api_scan():
     target, _ = urldefrag(target)
 
     try:
-        report = scan_target(target)
+        report = scan_target(
+            target,
+            allowed_origins=ALLOWED_SCAN_ORIGINS if render_request else (),
+            allow_loopback=local_request
+        )
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except requests.RequestException:
-        return jsonify({"error": "The local target could not be reached."}), 502
+        return jsonify({"error": "The target could not be reached."}), 502
 
     history_saved = True
 

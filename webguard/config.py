@@ -10,3 +10,8 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "::1"
 ]
+
+RENDER_DASHBOARD_HOST = "webguard-2prs.onrender.com"
+ALLOWED_SCAN_ORIGINS = (
+    "https://food-delivery-0db3.onrender.com",
+)

@@ -97,11 +97,11 @@ Run the automated test suite:
 python -m pytest -v
 ```
 
-Latest recorded result: **54 tests passed.**
+Latest recorded result: **70 tests passed.**
 
 ## Security Scope
 
-WebGuard is designed for local testing environments. Its target validation restricts scanning to localhost and loopback IP addresses.
+The local scanner accepts localhost and loopback targets. The hosted Render dashboard is restricted to the exact origin listed in `webguard/config.py`; it rejects loopback and other external targets.
 
 Only scan applications you own or have explicit permission to test.
 

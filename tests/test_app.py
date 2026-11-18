@@ -1,6 +1,7 @@
 import pytest
 
 from app import app
+from webguard.config import ALLOWED_SCAN_ORIGINS
 from webguard.scanner import validate_target
 
 
@@ -26,10 +27,24 @@ def test_home_page_enables_scanning_for_local_requests():
     assert b"Scans are limited to localhost and loopback targets." in response.data
 
 
-def test_home_page_disables_scanning_for_hosted_requests():
+def test_home_page_enables_scanning_for_render_target():
     response = app.test_client().get(
         "/",
         headers={"Host": "webguard-2prs.onrender.com"},
+        environ_base={"REMOTE_ADDR": "203.0.113.10"}
+    )
+
+    assert response.status_code == 200
+    target = ALLOWED_SCAN_ORIGINS[0] + "/"
+    assert f'value="{target}"'.encode() in response.data
+    assert b'<button type="submit">Scan target</button>' in response.data
+    assert b"Render scans are restricted to" in response.data
+
+
+def test_home_page_disables_scanning_for_unrecognized_hosted_requests():
+    response = app.test_client().get(
+        "/",
+        headers={"Host": "other.onrender.com"},
         environ_base={"REMOTE_ADDR": "203.0.113.10"}
     )
 
@@ -38,7 +53,7 @@ def test_home_page_disables_scanning_for_hosted_requests():
     assert b"Scanning is available only when WebGuard runs locally." in response.data
 
 
-def test_scan_endpoint_rejects_hosted_requests():
+def test_render_scan_rejects_loopback_target():
     response = app.test_client().post(
         "/api/scan",
         json={"target": "http://127.0.0.1:3000"},
@@ -46,7 +61,8 @@ def test_scan_endpoint_rejects_hosted_requests():
         environ_base={"REMOTE_ADDR": "203.0.113.10"}
     )
 
-    assert response.status_code == 403
+    assert response.status_code == 400
+    assert "Target must be localhost, loopback, or an explicitly allowed origin." in response.json["error"]
 
 
 def test_scan_endpoint_rejects_non_loopback_targets():
@@ -56,7 +72,7 @@ def test_scan_endpoint_rejects_non_loopback_targets():
     )
 
     assert response.status_code == 400
-    assert "Only localhost and loopback targets are allowed." in response.json["error"]
+    assert "explicitly allowed origin" in response.json["error"]
 
 
 def test_local_scan_saves_result_to_history(monkeypatch):
@@ -68,8 +84,12 @@ def test_local_scan_saves_result_to_history(monkeypatch):
     saved_reports = []
     scanned_targets = []
 
-    def scan_target(target):
-        validate_target(target)
+    def scan_target(target, allowed_origins=(), allow_loopback=True):
+        validate_target(
+            target,
+            allowed_origins=allowed_origins,
+            allow_loopback=allow_loopback
+        )
         scanned_targets.append(target)
         return report
 
@@ -88,3 +108,35 @@ def test_local_scan_saves_result_to_history(monkeypatch):
     assert response.json["history_saved"] is True
     assert scanned_targets == [report["target"]]
     assert saved_reports == [report]
+
+
+def test_render_scan_is_limited_to_allowlisted_origin(monkeypatch):
+    target = ALLOWED_SCAN_ORIGINS[0] + "/"
+    report = {
+        "target": target,
+        "findings_count": 1,
+        "risk_level": "Medium"
+    }
+
+    def scan_target(url, allowed_origins=(), allow_loopback=True):
+        validate_target(
+            url,
+            allowed_origins=allowed_origins,
+            allow_loopback=allow_loopback
+        )
+        return report
+
+    monkeypatch.setattr("app.scan_target", scan_target)
+    monkeypatch.setattr("app.connect_database", lambda: None)
+    monkeypatch.setattr("app.save_scan_result", lambda result: None)
+    monkeypatch.setattr("app.close_database", lambda: None)
+
+    response = app.test_client().post(
+        "/api/scan",
+        json={"target": target},
+        headers={"Host": "webguard-2prs.onrender.com"},
+        environ_base={"REMOTE_ADDR": "203.0.113.10"}
+    )
+
+    assert response.status_code == 200
+    assert response.json["report"] == report
