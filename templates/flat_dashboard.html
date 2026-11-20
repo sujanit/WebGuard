@@ -113,6 +113,38 @@ button:hover { background: #0284c7; }
     line-height: 1.6;
 }
 
+.flat-diagram {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 20px auto;
+}
+
+.diagram-box {
+    fill: #263750;
+    stroke: #38bdf8;
+    stroke-width: 2;
+}
+
+.diagram-line {
+    fill: none;
+    stroke: #38bdf8;
+    stroke-width: 3;
+    marker-end: url(#flat-arrow);
+}
+
+.diagram-label {
+    fill: #e5e7eb;
+    font: 15px Arial, sans-serif;
+    text-anchor: middle;
+}
+
+.diagram-detail {
+    fill: #94a3b8;
+    font: 12px Arial, sans-serif;
+    text-anchor: middle;
+}
+
 code {
     color: #7dd3fc;
     overflow-wrap: anywhere;
@@ -165,7 +197,65 @@ footer {
 </section>
 
 <section class="section">
-    <h2>2. Regular Expression - URL Validation</h2>
+    <h2>2. Static FLAT Processing Diagram</h2>
+    <p class="muted">
+        A view-only diagram of URL recognition, target validation and the scan FSM.
+    </p>
+
+    <svg class="flat-diagram" viewBox="0 0 1000 300" role="img"
+         aria-labelledby="flat-diagram-title flat-diagram-description">
+        <title id="flat-diagram-title">FLAT validation and scan lifecycle</title>
+        <desc id="flat-diagram-description">
+            A URL passes through regular-expression syntax validation, DFA scheme
+            recognition, and target policy checks before the FSM runs the scan
+            lifecycle from initialization to completion.
+        </desc>
+        <defs>
+            <marker id="flat-arrow" markerWidth="10" markerHeight="10"
+                    refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#38bdf8"></path>
+            </marker>
+        </defs>
+        <path class="diagram-line" d="M180 65 H220"></path>
+        <path class="diagram-line" d="M390 65 H430"></path>
+        <path class="diagram-line" d="M600 65 H640"></path>
+        <path class="diagram-line" d="M810 65 H850"></path>
+        <path class="diagram-line" d="M920 100 V150 H122 V190"></path>
+        <path class="diagram-line" d="M235 225 H260"></path>
+        <path class="diagram-line" d="M395 225 H420"></path>
+        <path class="diagram-line" d="M555 225 H580"></path>
+        <path class="diagram-line" d="M715 225 H740"></path>
+        <rect class="diagram-box" x="10" y="30" width="170" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="220" y="30" width="170" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="430" y="30" width="170" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="640" y="30" width="170" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="850" y="30" width="140" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="10" y="190" width="225" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="260" y="190" width="135" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="420" y="190" width="135" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="580" y="190" width="135" height="70" rx="10"></rect>
+        <rect class="diagram-box" x="740" y="190" width="135" height="70" rx="10"></rect>
+        <text class="diagram-label" x="95" y="60">URL input</text>
+        <text class="diagram-detail" x="95" y="82">HTTP or HTTPS</text>
+        <text class="diagram-label" x="305" y="60">Regex</text>
+        <text class="diagram-detail" x="305" y="82">URL syntax</text>
+        <text class="diagram-label" x="515" y="60">DFA</text>
+        <text class="diagram-detail" x="515" y="82">Scheme prefix</text>
+        <text class="diagram-label" x="725" y="60">Target checks</text>
+        <text class="diagram-detail" x="725" y="82">Loopback / allowlist</text>
+        <text class="diagram-label" x="920" y="60">Accepted</text>
+        <text class="diagram-detail" x="920" y="82">Ready to scan</text>
+        <text class="diagram-label" x="122" y="218">INITIALIZED → VALIDATING</text>
+        <text class="diagram-detail" x="122" y="240">Scan FSM</text>
+        <text class="diagram-label" x="327" y="230">SCANNING</text>
+        <text class="diagram-label" x="487" y="230">ANALYZING</text>
+        <text class="diagram-label" x="647" y="230">REPORTING</text>
+        <text class="diagram-label" x="807" y="230">COMPLETED</text>
+    </svg>
+</section>
+
+<section class="section">
+    <h2>3. Regular Expression - URL Validation</h2>
 
     <p class="muted">Pattern currently implemented in WebGuard:</p>
 
@@ -191,7 +281,7 @@ footer {
 </section>
 
 <section class="section">
-    <h2>3. Regular Expression - Header Validation</h2>
+    <h2>4. Regular Expression - Header Validation</h2>
 
     <p class="muted">Header-name pattern from the FLAT engine:</p>
 
@@ -210,7 +300,7 @@ footer {
 </section>
 
 <section class="section">
-    <h2>4. DFA - HTTP / HTTPS Scheme Recognition</h2>
+    <h2>5. DFA - HTTP / HTTPS Scheme Recognition</h2>
 
     <p class="muted">
         WebGuard's DFA recognizes the HTTP or HTTPS scheme prefix.
@@ -247,7 +337,7 @@ footer {
 </section>
 
 <section class="section">
-    <h2>5. FSM - WebGuard Scan Lifecycle</h2>
+    <h2>6. FSM - WebGuard Scan Lifecycle</h2>
 
     <p class="muted">
         These are the states used by the existing scan state machine.
@@ -275,7 +365,7 @@ footer {
 </section>
 
 <section class="section">
-    <h2>6. FLAT Integration in WebGuard</h2>
+    <h2>7. FLAT Integration in WebGuard</h2>
 
     <div class="flow">
         <strong>Step 1:</strong> Scanner receives the target URL.
@@ -303,7 +393,7 @@ footer {
 </section>
 
 <section class="section">
-    <h2>7. Existing Project Files</h2>
+    <h2>8. Existing Project Files</h2>
 
     <div class="grid">
         <div class="card">

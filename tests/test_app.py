@@ -16,6 +16,23 @@ def test_dashboards_are_public_without_authentication_config(path, monkeypatch):
     assert "WWW-Authenticate" not in response.headers
 
 
+@pytest.mark.parametrize(
+    ("path", "diagram_title"),
+    [
+        ("/cn", b"WebGuard network architecture"),
+        ("/flat", b"FLAT validation and scan lifecycle"),
+        ("/fswd", b"WebGuard full-stack data flow")
+    ]
+)
+def test_subject_dashboards_include_accessible_static_diagrams(path, diagram_title):
+    response = app.test_client().get(path)
+
+    assert response.status_code == 200
+    assert b'<svg' in response.data
+    assert b'role="img"' in response.data
+    assert diagram_title in response.data
+
+
 def test_home_page_enables_scanning_for_local_requests():
     response = app.test_client().get("/")
 
